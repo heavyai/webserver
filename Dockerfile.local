@@ -1,0 +1,10 @@
+FROM golang:1.18 as builder
+RUN mkdir /webserver
+WORKDIR /webserver
+COPY . .
+RUN GOOS=linux GOARCH=amd64 ./scripts/build.sh "build/Linux-x86_64"
+
+FROM docker-internal.mapd.com/mapd/mapd-cpu
+COPY ./tools/docker/local/heavy.conf /var/lib/heavyai/heavy.conf
+COPY --from=builder /webserver/build/Linux-x86_64/heavy_web_server /opt/heavyai/bin
+EXPOSE 6273 6274 6278 6276

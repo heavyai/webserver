@@ -1,0 +1,112 @@
+{
+	"info": {
+		"_postman_id": "2693ce91-9feb-4202-85af-a19500b596e9",
+		"name": "SAML Integrations",
+		"description": "Tests various functionality related to SAML integrations requiring proper SAML configurations in servers.json and underlying omniscidb instance.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Clear Sessions If They Exist Copy",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "ba05d7b0-b989-4af1-b4a2-3442e297c8d6",
+						"exec": [
+							"pm.test(\"response is 204 or 401\", function () {",
+							"    pm.expect([pm.response.code === 204, pm.response.code === 401]).to.include(true)",
+							"})"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"id": "c3d9e4f2-c669-412f-a794-dab69f2422e7",
+						"exec": [
+							"const jar = pm.cookies.jar()",
+							"",
+							"jar.clear(pm.request.url, function (error) {",
+							"  // error - <Error>",
+							"})"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:6273/session/destroy/all",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "6273",
+					"path": [
+						"session",
+						"destroy",
+						"all"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "SAML Redirect",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "b725a96e-0153-4ae0-a307-9efc4834f247",
+						"exec": [
+							"pm.test(\"response is 302\", () => {",
+							"    pm.expect(pm.response.code === 302)",
+							"})",
+							"",
+							"pm.test(\"Location header contains RelayState or returnurl query parameter\", () => {",
+							"    const locationHeaderValue = (",
+							"        pm.response.headers.find(h => h.key === \"Location\") ||",
+							"        {}",
+							"    ).value",
+							"    pm.expect(locationHeaderValue).to.be.a('string')",
+							"    pm.expect(locationHeaderValue.includes('RelayState') || locationHeaderValue.includes('returnurl')).to.be.ok",
+							"})"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"followRedirects": false
+			},
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "http://localhost:6273/dashboard/123",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "6273",
+					"path": [
+						"dashboard",
+						"123"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"protocolProfileBehavior": {}
+}

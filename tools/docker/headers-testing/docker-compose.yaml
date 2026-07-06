@@ -1,0 +1,14 @@
+version: '3'
+
+services:
+  webserver-proxy:
+      image: webserver-proxy
+      build: ./webserver-proxy
+      ports:
+        - 6273:6273
+      privileged: true
+  backend:
+    image: backend
+    build: ./backend
+    depends_on:
+        - webserver-proxy

@@ -1,0 +1,38 @@
+# Binaries for programs and plugins
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+storage/
+
+# golicense binary
+/bin
+
+# Webserver binary
+omnisci_web_server
+
+# Test tooling output
+*.test
+*.out
+/handlers/data
+
+# Local tooling, OS
+.vscode
+.DS_Store
+
+# Local output, test dirs
+/build
+/data
+/docs
+/downloads
+/frontend
+
+# Docker tooling dirs and artifacts
+/tools/docker/saml/omniscidata
+/tools/docker/saml/mapd-immerse
+/tools/docker/fips140-2/src
+/tools/docker/fips140-2/build-artifacts
+/tools/docker/jupyter/omnisci
+/tools/docker/jupyter/data

@@ -1,0 +1,240 @@
+{
+	"info": {
+		"_postman_id": "59e49e87-e657-4959-bfb6-ba6e04ef545d",
+		"name": "Tutela",
+		"description": "Test Suit for Tutela-specific features requiring OWS running w/ `--custom-integration-auth=true` flag",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Set servers.json",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "f83069bb-cdf4-4864-8ce6-8e12333a5358",
+						"exec": [
+							"pm.test(\"response is 200 ok\", function () {",
+							"    pm.response.to.be.ok",
+							"})",
+							"pm.test(\"response has servers-json cookie\", function () {",
+							"    pm.expect(getCookie(\"servers-json\")).to.be.ok",
+							"})",
+							"",
+							"function getCookie(cookieName) {",
+							"    let cookies = []",
+							"    pm.response.headers.each((header) => {",
+							"        if (header.key === \"Set-Cookie\") {",
+							"            cookies.push(header.value)",
+							"        }",
+							"    })",
+							"    ",
+							"    return cookies.find((cookie) => cookie.startsWith(cookieName + \"=\"))",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Accept",
+						"type": "text",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "username",
+							"value": "Tutels",
+							"type": "text"
+						}
+					]
+				},
+				"url": {
+					"raw": "http://localhost:6273/_internal/set-servers-json",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "6273",
+					"path": [
+						"_internal",
+						"set-servers-json"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Modified servers.json",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "f83069bb-cdf4-4864-8ce6-8e12333a5358",
+						"exec": [
+							"pm.test(\"response is 200 ok\", function () {",
+							"    pm.response.to.be.ok",
+							"})",
+							"pm.test(\"response body has expected servers config structure\", function () {",
+							"    const body = pm.response.json()",
+							"    pm.expect(body.length).to.eq(1)",
+							"    const serversConfig = body[0]",
+							"    const configKeys = Object.keys(serversConfig)",
+							"    const expectedKeys = ['database', 'host', 'master', 'password', 'port', 'username']",
+							"    configKeys.each(k => {",
+							"        pm.expect(expectedKeys.includes(k))",
+							"    })",
+							"})",
+							"pm.test(\"response body has modified username\", function () {",
+							"    const body = pm.response.json()",
+							"    pm.expect(body.length).to.eq(1)",
+							"    const serversConfig = body[0]",
+							"    pm.expect(serversConfig.username === \"Tutela\")",
+							"})"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "http://localhost:6273/servers.json",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "6273",
+					"path": [
+						"servers.json"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Clear servers.json",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "f83069bb-cdf4-4864-8ce6-8e12333a5358",
+						"exec": [
+							"pm.test(\"response is 200 ok\", function () {",
+							"    pm.response.to.be.ok",
+							"})",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept",
+						"type": "text",
+						"value": "application/json"
+					}
+				],
+				"url": {
+					"raw": "http://localhost:6273/_internal/clear-servers-json",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "6273",
+					"path": [
+						"_internal",
+						"clear-servers-json"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Cleared servers.json",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "f83069bb-cdf4-4864-8ce6-8e12333a5358",
+						"exec": [
+							"pm.test(\"response is 200 ok\", function () {",
+							"    pm.response.to.be.ok",
+							"})",
+							"pm.test(\"response body has expected servers config structure\", function () {",
+							"    const body = pm.response.json()",
+							"    pm.expect(body.length).to.eq(1)",
+							"    const serversConfig = body[0]",
+							"    const configKeys = Object.keys(serversConfig)",
+							"    const expectedKeys = ['database', 'host', 'master', 'password', 'port', 'username']",
+							"    configKeys.each(k => {",
+							"        pm.expect(expectedKeys.includes(k))",
+							"    })",
+							"})",
+							"pm.test(\"response body no longer has modified username\", function () {",
+							"    const body = pm.response.json()",
+							"    pm.expect(body.length).to.eq(1)",
+							"    const serversConfig = body[0]",
+							"    pm.expect(serversConfig.username != \"Tutela\")",
+							"})",
+							"pm.test(\"response does not have servers-json cookie\", function () {",
+							"    pm.expect(getCookie(\"servers-json\")).to.not.be.ok",
+							"})",
+							"",
+							"function getCookie(cookieName) {",
+							"    let cookies = []",
+							"    pm.response.headers.each((header) => {",
+							"        if (header.key === \"Set-Cookie\") {",
+							"            cookies.push(header.value)",
+							"        }",
+							"    })",
+							"    ",
+							"    return cookies.find((cookie) => cookie.startsWith(cookieName + \"=\"))",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "http://localhost:6273/servers.json",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "6273",
+					"path": [
+						"servers.json"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"protocolProfileBehavior": {}
+}

@@ -1,0 +1,4 @@
+FROM omnisci/omnisci-ee-cpu:latest
+
+COPY ./build-artifacts/build/Linux-x86_64/heavy_web_server /omnisci/bin
+RUN openssl req -new -newkey rsa:4096 -days 1800 -nodes -sha256 -x509 -subj "/C=US/ST=OmniSci/L=OmniSci/O=OmniSci/CN=omnisci-webserver" -keyout /etc/ssl/private/cert.key -out /etc/ssl/certs/cert.crt

@@ -1,0 +1,202 @@
+{
+	"info": {
+		"_postman_id": "0f6fe1d8-9784-4c8e-b5f4-fa781aa9e8e6",
+		"name": "ConfigurationDB",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Successful Session Create - mapd",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "c398942f-5efd-4ec7-889d-94f6ec6fce35",
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"id": "e4af51cf-f5bc-461c-8684-3fcf264f909e",
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Accept",
+						"type": "text",
+						"value": "application/json"
+					},
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"type": "text",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\"username\":\"{{LDAPUsername}}\",\"password\":\"{{LDAPPassword}}\",\"dbName\":\"mapd\"}"
+				},
+				"url": {
+					"raw": "http://localhost:6273/session/create",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "6273",
+					"path": [
+						"session",
+						"create"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Configuration DB",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "f8ade797-1e25-4072-8eea-bb03cbd30432",
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"id": "edbb369d-3eac-4a4d-a5b4-d46af5d747e2",
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Accept",
+						"type": "text",
+						"value": "application/json"
+					},
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"type": "text",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\"key\":\"value\"}"
+				},
+				"url": {
+					"raw": "http://localhost:6273/configuration/db",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "6273",
+					"path": [
+						"configuration",
+						"db"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Configuration DB",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "bcb29bf9-0adb-4511-86af-6c64d369cc2e",
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"id": "a82a44f3-6b05-4267-a602-c3e3a17711ae",
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept",
+						"type": "text",
+						"value": "application/json"
+					},
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"type": "text",
+						"value": "application/json"
+					}
+				],
+				"url": {
+					"raw": "http://localhost:6273/configuration/db",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "6273",
+					"path": [
+						"configuration",
+						"db"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"id": "8e156cc3-39c3-4bff-bf6b-cf587d33e848",
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"id": "327c4242-f1b1-4459-856b-0ef48b2022a4",
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"protocolProfileBehavior": {}
+}

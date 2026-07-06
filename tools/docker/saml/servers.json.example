@@ -1,0 +1,10 @@
+[
+  {
+    "database": "omnisci",
+    "host": "localhost",
+    "master": true,
+    "password": "HyperInteractive",
+    "port": 6273,
+    "username": "admin"
+  }
+]

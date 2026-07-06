@@ -1,0 +1,2456 @@
+{
+	"info": {
+		"_postman_id": "43eb912b-c735-4b0e-995a-572ca84e3999",
+		"name": "OmniSci-Webserver",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Sessions",
+			"item": [
+				{
+					"name": "Clear Sessions If They Exist",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "8ce4f2b2-4ef6-4245-a88c-3be8de8d6162",
+								"exec": [
+									"pm.test(\"response is 204 or 401\", function () {",
+									"    pm.expect([pm.response.code === 204, pm.response.code === 401]).to.include(true)",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"id": "8c871d3b-4df0-4e2b-816b-07a50ff7d71a",
+								"exec": [
+									"const jar = pm.cookies.jar()",
+									"",
+									"jar.clear(pm.request.url, function (error) {",
+									"  // error - <Error>",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:6273/session/destroy/all",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "6273",
+							"path": [
+								"session",
+								"destroy",
+								"all"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Successful Session Create - ExplicitDB mapd",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "42c8ce9f-d342-415f-9fb5-d3218cd5dfc4",
+								"exec": [
+									"pm.test(\"response is 201 created\", function () {",
+									"    pm.response.to.have.status(201);",
+									"})",
+									"pm.test(\"response body contains DB session info\", () => {",
+									"    const body = pm.response.json()",
+									"    pm.expect(body.user).to.be.a(\"string\")",
+									"    pm.expect(body.database).to.be.a(\"string\")",
+									"    pm.expect(body.start_time).to.be.a(\"number\")",
+									"    pm.expect(body.is_super).to.be.a(\"boolean\")",
+									"})",
+									"pm.test(\"response has oat cookie\", function () {",
+									"    pm.expect(getCookie(\"oat\")).to.be.ok",
+									"})",
+									"",
+									"function getCookie(cookieName) {",
+									"    let cookies = []",
+									"    pm.response.headers.each((header) => {",
+									"        if (header.key === \"Set-Cookie\") {",
+									"            cookies.push(header.value)",
+									"        }",
+									"    })",
+									"    ",
+									"    return cookies.find((cookie) => cookie.startsWith(cookieName + \"=\"))",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"id": "cb9fe8f6-d989-4081-bf80-b316cb694771",
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"type": "text",
+								"value": "application/json"
+							},
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"username\":\"{{LDAPUsername}}\",\"password\":\"{{LDAPPassword}}\",\"dbName\":\"mapd\"}"
+						},
+						"url": {
+							"raw": "http://localhost:6273/session/create",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "6273",
+							"path": [
+								"session",
+								"create"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Successful Session Exchange - ExplicitDB apache",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "42c8ce9f-d342-415f-9fb5-d3218cd5dfc4",
+								"exec": [
+									"pm.test(\"response is 200 OK\", function () {",
+									"    pm.response.to.have.status(200);",
+									"})",
+									"pm.test(\"response has Set-Cookie header w/ oat cookie\", function () {",
+									"    const setCookieHeader = pm.response.headers.get(\"Set-Cookie\")",
+									"    pm.expect(setCookieHeader).to.be.ok",
+									"    pm.expect(setCookieHeader.indexOf('oat=') > -1).to.be.ok",
+									"})",
+									"pm.test(\"response body contains DB session info\", () => {",
+									"    const body = pm.response.json()",
+									"    pm.expect(body.user).to.be.a(\"string\")",
+									"    pm.expect(body.database).to.be.a(\"string\")",
+									"    pm.expect(body.start_time).to.be.a(\"number\")",
+									"    pm.expect(body.is_super).to.be.a(\"boolean\")",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"type": "text",
+								"value": "application/json"
+							},
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							},
+							{
+								"key": "Referer",
+								"value": "http://localhost:6273/mapd/dashboards",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"dbName\":\"apache\"}"
+						},
+						"url": {
+							"raw": "http://localhost:6273/session/exchange",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "6273",
+							"path": [
+								"session",
+								"exchange"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Redundant Session Exchange - ExplicitDB apache",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "42c8ce9f-d342-415f-9fb5-d3218cd5dfc4",
+								"exec": [
+									"pm.test(\"response is 200 OK\", function () {",
+									"    pm.response.to.have.status(200);",
+									"})",
+									"pm.test(\"response DOES NOT have Set-Cookie header w/ oat cookie\", function () {",
+									"    const setCookieHeader = pm.response.headers.get(\"Set-Cookie\")",
+									"    pm.expect(setCookieHeader).to.not.be.ok",
+									"})",
+									"pm.test(\"response body contains DB session info\", () => {",
+									"    const body = pm.response.json()",
+									"    pm.expect(body.user).to.be.a(\"string\")",
+									"    pm.expect(body.database).to.be.a(\"string\")",
+									"    pm.expect(body.start_time).to.be.a(\"number\")",
+									"    pm.expect(body.is_super).to.be.a(\"boolean\")",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"type": "text",
+								"value": "application/json"
+							},
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							},
+							{
+								"key": "Referer",
+								"value": "http://localhost:6273/mapd/dashboards",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"dbName\":\"apache\"}"
+						},
+						"url": {
+							"raw": "http://localhost:6273/session/exchange",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "6273",
+							"path": [
+								"session",
+								"exchange"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Successful Session Validate - Implicit",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "a49bf0f6-63dc-4b1d-a359-5d604d56ce02",
+								"exec": [
+									"pm.test(\"response is 200 ok\", function () {",
+									"    pm.response.to.be.ok;",
+									"})",
+									"",
+									"pm.test(\"response body should have items\", () => {",
+									"    const body = pm.response.json()",
+									"    pm.expect(body.username).to.be.ok",
+									"    pm.expect(body.dbName).to.be.ok",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"type": "text",
+								"value": "application/json"
+							},
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:6273/session/validate",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "6273",
+							"path": [
+								"session",
+								"validate"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Successful Session Validate - DBContext apache",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "a49bf0f6-63dc-4b1d-a359-5d604d56ce02",
+								"exec": [
+									"pm.test(\"response is 200 ok\", function () {",
+									"    pm.response.to.be.ok;",
+									"})",
+									"",
+									"pm.test(\"response body should have items\", () => {",
+									"    const body = pm.response.json()",
+									"    pm.expect(body.username).to.be.ok",
+									"    pm.expect(body.dbName).to.be.ok",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"type": "text",
+								"value": "application/json"
+							},
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							},
+							{
+								"key": "Referer",
+								"type": "text",
+								"value": "http://localhost:6273/apache/dashboards"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:6273/session/validate",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "6273",
+							"path": [
+								"session",
+								"validate"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Successful Session Create - ExplicitDB omnisci",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "42c8ce9f-d342-415f-9fb5-d3218cd5dfc4",
+								"exec": [
+									"pm.test(\"response is 201 created\", function () {",
+									"    pm.response.to.have.status(201);",
+									"})",
+									"pm.test(\"response body contains DB session info\", () => {",
+									"    const body = pm.response.json()",
+									"    pm.expect(body.user).to.be.a(\"string\")",
+									"    pm.expect(body.database).to.be.a(\"string\")",
+									"    pm.expect(body.start_time).to.be.a(\"number\")",
+									"    pm.expect(body.is_super).to.be.a(\"boolean\")",
+									"})",
+									"pm.test(\"response has oat cookie\", function () {",
+									"    pm.expect(getCookie(\"oat\")).to.be.ok",
+									"})",
+									"",
+									"function getCookie(cookieName) {",
+									"    let cookies = []",
+									"    pm.response.headers.each((header) => {",
+									"        if (header.key === \"Set-Cookie\") {",
+									"            cookies.push(header.value)",
+									"        }",
+									"    })",
+									"    ",
+									"    return cookies.find((cookie) => cookie.startsWith(cookieName + \"=\"))",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"type": "text",
+								"value": "application/json"
+							},
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"username\":\"{{LDAPUsername}}\",\"password\":\"{{LDAPPassword}}\",\"dbName\":\"omnisci\"}"
+						},
+						"url": {
+							"raw": "http://localhost:6273/session/create",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "6273",
+							"path": [
+								"session",
+								"create"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Successful Session Create - ExplicitDB apache",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "42c8ce9f-d342-415f-9fb5-d3218cd5dfc4",
+								"exec": [
+									"pm.test(\"response is 201 created\", function () {",
+									"    pm.response.to.have.status(201);",
+									"})",
+									"pm.test(\"response body contains DB session info\", () => {",
+									"    const body = pm.response.json()",
+									"    pm.expect(body.user).to.be.a(\"string\")",
+									"    pm.expect(body.database).to.be.a(\"string\")",
+									"    pm.expect(body.start_time).to.be.a(\"number\")",
+									"    pm.expect(body.is_super).to.be.a(\"boolean\")",
+									"})",
+									"pm.test(\"response has oat cookie\", function () {",
+									"    pm.expect(getCookie(\"oat\")).to.be.ok",
+									"})",
+									"",
+									"function getCookie(cookieName) {",
+									"    let cookies = []",
+									"    pm.response.headers.each((header) => {",
+									"        if (header.key === \"Set-Cookie\") {",
+									"            cookies.push(header.value)",
+									"        }",
+									"    })",
+									"    ",
+									"    return cookies.find((cookie) => cookie.startsWith(cookieName + \"=\"))",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"type": "text",
+								"value": "application/json"
+							},
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"username\":\"{{LDAPUsername}}\",\"password\":\"{{LDAPPassword}}\",\"dbName\":\"apache\"}"
+						},
+						"url": {
+							"raw": "http://localhost:6273/session/create",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "6273",
+							"path": [
+								"session",
+								"create"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Successful Session Create - ExplicitDB kiowa",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "42c8ce9f-d342-415f-9fb5-d3218cd5dfc4",
+								"exec": [
+									"pm.test(\"response is 201 created\", function () {",
+									"    pm.response.to.have.status(201);",
+									"})",
+									"pm.test(\"response body contains DB session info\", () => {",
+									"    const body = pm.response.json()",
+									"    pm.expect(body.user).to.be.a(\"string\")",
+									"    pm.expect(body.database).to.be.a(\"string\")",
+									"    pm.expect(body.start_time).to.be.a(\"number\")",
+									"    pm.expect(body.is_super).to.be.a(\"boolean\")",
+									"})",
+									"pm.test(\"response has oat cookie\", function () {",
+									"    pm.expect(getCookie(\"oat\")).to.be.ok",
+									"})",
+									"",
+									"function getCookie(cookieName) {",
+									"    let cookies = []",
+									"    pm.response.headers.each((header) => {",
+									"        if (header.key === \"Set-Cookie\") {",
+									"            cookies.push(header.value)",
+									"        }",
+									"    })",
+									"    ",
+									"    return cookies.find((cookie) => cookie.startsWith(cookieName + \"=\"))",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"type": "text",
+								"value": "application/json"
+							},
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"username\":\"{{LDAPUsername}}\",\"password\":\"{{LDAPPassword}}\",\"dbName\":\"kiowa\"}"
+						},
+						"url": {
+							"raw": "http://localhost:6273/session/create",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "6273",
+							"path": [
+								"session",
+								"create"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "App Index - ExplicitDB black_hawk",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "a979ce80-e8d2-4df9-8ed0-dfd33852ec98",
+								"exec": [
+									"pm.test(\"response is OK\", function () {",
+									"    pm.response.to.be.ok",
+									"})",
+									"pm.test(\"response has Set-Cookie header w/ oat cookie\", function () {",
+									"    const setCookieHeader = pm.response.headers.get(\"Set-Cookie\")",
+									"    pm.expect(setCookieHeader).to.be.ok",
+									"    pm.expect(setCookieHeader.indexOf('oat=') > -1).to.be.ok",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:6273/black_hawk/dashboard/4032",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "6273",
+							"path": [
+								"black_hawk",
+								"dashboard",
+								"4032"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "App Index - No Session Exchange Implicit DB",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "94113885-fb06-4a0b-8f21-4f25e2d5c7c4",
+								"exec": [
+									"pm.test(\"response is 200 OK\", function () {",
+									"    pm.response.to.have.status(200);",
+									"})",
+									"pm.test(\"response DOES NOT have Set-Cookie header w/ oat cookie\", function () {",
+									"    const setCookieHeader = pm.response.headers.get(\"Set-Cookie\")",
+									"    pm.expect(setCookieHeader).to.not.be.ok",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:6273/dashboard/4032",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "6273",
+							"path": [
+								"dashboard",
+								"4032"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Successful Session Validate - DBContext mapd",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "a49bf0f6-63dc-4b1d-a359-5d604d56ce02",
+								"exec": [
+									"pm.test(\"response is 200 ok\", function () {",
+									"    pm.response.to.be.ok;",
+									"})",
+									"",
+									"pm.test(\"response body should have items\", () => {",
+									"    const body = pm.response.json()",
+									"    pm.expect(body.username).to.be.ok",
+									"    pm.expect(body.dbName).to.be.ok",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"type": "text",
+								"value": "application/json"
+							},
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							},
+							{
+								"key": "Referer",
+								"type": "text",
+								"value": "http://localhost:6273/mapd/dashboards"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:6273/session/validate",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "6273",
+							"path": [
+								"session",
+								"validate"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Successful Session Validate - DBContext omnisci",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "a49bf0f6-63dc-4b1d-a359-5d604d56ce02",
+								"exec": [
+									"pm.test(\"response is 200 ok\", function () {",
+									"    pm.response.to.be.ok;",
+									"})",
+									"",
+									"pm.test(\"response body should have items\", () => {",
+									"    const body = pm.response.json()",
+									"    pm.expect(body.username).to.be.ok",
+									"    pm.expect(body.dbName).to.be.ok",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"type": "text",
+								"value": "application/json"
+							},
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							},
+							{
+								"key": "Referer",
+								"value": "http://localhost:6273/omnisci/dashboards",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:6273/session/validate",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "6273",
+							"path": [
+								"session",
+								"validate"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Successful Session Validate - DBContext black_hawk",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "a49bf0f6-63dc-4b1d-a359-5d604d56ce02",
+								"exec": [
+									"pm.test(\"response is 200 ok\", function () {",
+									"    pm.response.to.be.ok;",
+									"})",
+									"",
+									"pm.test(\"response body should have items\", () => {",
+									"    const body = pm.response.json()",
+									"    pm.expect(body.username).to.be.ok",
+									"    pm.expect(body.dbName).to.be.ok",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"type": "text",
+								"value": "application/json"
+							},
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							},
+							{
+								"key": "Referer",
+								"type": "text",
+								"value": "http://localhost:6273/black_hawk/dashboards"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:6273/session/validate",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "6273",
+							"path": [
+								"session",
+								"validate"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "FAILED Session Validate - bad DBContext omnisci",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "a49bf0f6-63dc-4b1d-a359-5d604d56ce02",
+								"exec": [
+									"pm.test(\"response is 401\", function () {",
+									"    pm.response.to.have.status(401)",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"type": "text",
+								"value": "application/json"
+							},
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							},
+							{
+								"key": "Referer",
+								"value": "http://localhost:6273/baddb/dashboards",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:6273/session/validate",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "6273",
+							"path": [
+								"session",
+								"validate"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Session Durations",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "327df130-18e2-434c-8631-9152407df99f",
+								"exec": [
+									"pm.test(\"response is 200 ok\", function () {",
+									"    pm.response.to.be.ok;",
+									"})",
+									"pm.test(\"response body has timeout durations\", function () {",
+									"    const body = pm.response.json()",
+									"    pm.expect(body.idleSessionDuration).to.be.a('number')",
+									"    pm.expect(body.maxSessionDuration).to.be.a('number')",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:6273/session/durations",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "6273",
+							"path": [
+								"session",
+								"durations"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Session Durations Current",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "327df130-18e2-434c-8631-9152407df99f",
+								"exec": [
+									"pm.test(\"response is 200 ok\", function () {",
+									"    pm.response.to.be.ok;",
+									"})",
+									"pm.test(\"response body has timeout durations\", function () {",
+									"    const body = pm.response.json()",
+									"    pm.expect(body.idleDuration).to.be.a('number')",
+									"    pm.expect(body.maxDuration).to.be.a('number')",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							},
+							{
+								"key": "Accept",
+								"type": "text",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:6273/session/durations/current",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "6273",
+							"path": [
+								"session",
+								"durations",
+								"current"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Successful - Fetch DatabaseAccessList",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "69a2eaa2-354d-4189-85da-26071a04fb7c",
+								"exec": [
+									"pm.test(\"response is 200 ok\", function () {",
+									"    pm.response.to.be.ok;",
+									"})",
+									"",
+									"pm.test(\"response body should have items\", () => {",
+									"    const dbAccessList = pm.response.json()",
+									"    pm.expect(dbAccessList).to.be.an('array')",
+									"    pm.expect(dbAccessList.length).to.be.ok",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:6273/session/db-access-list",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "6273",
+							"path": [
+								"session",
+								"db-access-list"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Fetch Roles - Implicit DB",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "327df130-18e2-434c-8631-9152407df99f",
+								"exec": [
+									"pm.test(\"response is 200 ok\", function () {",
+									"    pm.response.to.be.ok;",
+									"})",
+									"pm.test(\"response body has timeout durations\", function () {",
+									"    const body = pm.response.json()",
+									"    pm.expect(body).to.be.an('array')",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							},
+							{
+								"key": "Accept",
+								"type": "text",
+								"value": "application/json"
+							},
+							{
+								"key": "Referer",
+								"value": "http://localhost:6273/mapd/dashboards",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:6273/session/roles",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "6273",
+							"path": [
+								"session",
+								"roles"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Fetch Roles - mahakali_default_write",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "327df130-18e2-434c-8631-9152407df99f",
+								"exec": [
+									"pm.test(\"response is 200 ok\", function () {",
+									"    pm.response.to.be.ok;",
+									"})",
+									"pm.test(\"response body has timeout durations\", function () {",
+									"    const body = pm.response.json()",
+									"    pm.expect(body).to.be.an('array')",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							},
+							{
+								"key": "Accept",
+								"type": "text",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:6273/session/roles/mahakali_default_write",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "6273",
+							"path": [
+								"session",
+								"roles",
+								"mahakali_default_write"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Fetch Privileges - Implicit DB",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "327df130-18e2-434c-8631-9152407df99f",
+								"exec": [
+									"pm.test(\"response is 200 ok\", function () {",
+									"    pm.response.to.be.ok;",
+									"})",
+									"pm.test(\"response body has timeout durations\", function () {",
+									"    const body = pm.response.json()",
+									"    pm.expect(body.dashboard).to.be.an('array')",
+									"    pm.expect(body.viewSQLEditor).to.be.a('boolean')",
+									"    pm.expect(body.dataSource).to.be.an('array')",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							},
+							{
+								"key": "Accept",
+								"type": "text",
+								"value": "application/json"
+							},
+							{
+								"key": "Referer",
+								"value": "http://localhost:6273/mapd/dashboards",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:6273/session/privileges",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "6273",
+							"path": [
+								"session",
+								"privileges"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Fetch Permissions - Explicit DB",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "327df130-18e2-434c-8631-9152407df99f",
+								"exec": [
+									"pm.test(\"response is 200 ok\", function () {",
+									"    pm.response.to.be.ok;",
+									"})",
+									"pm.test(\"response body has timeout durations\", function () {",
+									"    const body = pm.response.json()",
+									"    pm.expect(body.dashboard).to.be.an('array')",
+									"    pm.expect(body.viewSQLEditor).to.be.a('boolean')",
+									"    pm.expect(body.dataSource).to.be.an('array')",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							},
+							{
+								"key": "Accept",
+								"type": "text",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:6273/session/privileges/apache",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "6273",
+							"path": [
+								"session",
+								"privileges",
+								"apache"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Fetch Table Permissions",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "327df130-18e2-434c-8631-9152407df99f",
+								"exec": [
+									"pm.test(\"response is 200 ok\", function () {",
+									"    pm.response.to.be.ok;",
+									"})",
+									"pm.test(\"response body has timeout durations\", function () {",
+									"    const body = pm.response.json()",
+									"    pm.expect(body).to.be.an('array')",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							},
+							{
+								"key": "Accept",
+								"type": "text",
+								"value": "application/json"
+							},
+							{
+								"key": "Referer",
+								"value": "http://localhost:6273/mapd/dashboards",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:6273/session/privileges/table/airplanes",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "6273",
+							"path": [
+								"session",
+								"privileges",
+								"table",
+								"airplanes"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Dashboards Thrift Proxy Call",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "3d4efc6d-5c5e-4603-8cd7-1b716a645c48",
+								"exec": [
+									"pm.test(\"response is 200 ok\", function () {",
+									"    pm.response.to.be.ok",
+									"})",
+									"pm.test(\"response body has list of dashboards\", function () {",
+									"    const body = pm.response.json()",
+									"    const dashboardsList = body[4][\"0\"].lst",
+									"    pm.expect(dashboardsList[0]).to.eq(\"rec\")",
+									"    pm.expect(dashboardsList[1]).to.be.a(\"number\")",
+									"    const arrLength = dashboardsList[1]",
+									"    pm.expect(Object.keys(dashboardsList).length).to.eq(arrLength + 2)",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/vnd.apache.thrift.json",
+								"type": "text"
+							},
+							{
+								"key": "Accept",
+								"value": "application/vnd.apache.thrift.json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "[1,\"get_dashboards\",1,0,{\"1\":{\"str\":\"IMMERSE_FAKE_SESSION_ID\"}}]"
+						},
+						"url": {
+							"raw": "http://localhost:6273",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "6273"
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Session Info Thrift Proxy Call - Implicit DB",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "3d4efc6d-5c5e-4603-8cd7-1b716a645c48",
+								"exec": [
+									"pm.test(\"response is 200 ok\", function () {",
+									"    pm.response.to.be.ok",
+									"})",
+									"pm.test(\"response body has thrift session info\", function () {",
+									"    const body = pm.response.json()",
+									"    const sessionInfo = body[4][\"0\"].rec",
+									"    const username = sessionInfo[1].str",
+									"    const database = sessionInfo[2].str",
+									"    const startTime = sessionInfo[3].i64",
+									"    pm.expect(username).to.eq(pm.globals.get(\"LDAPUsername\"))",
+									"    pm.expect(database).to.be.a(\"string\")",
+									"    pm.expect(startTime).to.be.a(\"number\")",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"type": "text",
+								"value": "application/vnd.apache.thrift.json"
+							},
+							{
+								"key": "Accept",
+								"type": "text",
+								"value": "application/vnd.apache.thrift.json"
+							},
+							{
+								"key": "Referer",
+								"value": "http://localhost:6273/dashboard",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "[1,\"get_session_info\",1,0,{\"1\":{\"str\":\"IMMERSE_FAKE_SESSION_ID\"}}]"
+						},
+						"url": {
+							"raw": "http://localhost:6273",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "6273"
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Dashboards Thrift Proxy Call - DBContext mapd",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "3d4efc6d-5c5e-4603-8cd7-1b716a645c48",
+								"exec": [
+									"pm.test(\"response is 200 ok\", function () {",
+									"    pm.response.to.be.ok",
+									"})",
+									"pm.test(\"response body has list of dashboards\", function () {",
+									"    const body = pm.response.json()",
+									"    const dashboardsList = body[4][\"0\"].lst",
+									"    pm.expect(dashboardsList[0]).to.eq(\"rec\")",
+									"    pm.expect(dashboardsList[1]).to.be.a(\"number\")",
+									"    const arrLength = dashboardsList[1]",
+									"    pm.expect(Object.keys(dashboardsList).length).to.eq(arrLength + 2)",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"type": "text",
+								"value": "application/vnd.apache.thrift.json"
+							},
+							{
+								"key": "Accept",
+								"type": "text",
+								"value": "application/vnd.apache.thrift.json"
+							},
+							{
+								"key": "Referer",
+								"value": "http://localhost:6273/mapd/dashboards",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "[1,\"get_dashboards\",1,0,{\"1\":{\"str\":\"IMMERSE_FAKE_SESSION_ID\"}}]"
+						},
+						"url": {
+							"raw": "http://localhost:6273",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "6273"
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Dashboards Thrift Proxy Call - DBContext omnisci",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "3d4efc6d-5c5e-4603-8cd7-1b716a645c48",
+								"exec": [
+									"pm.test(\"response is 200 ok\", function () {",
+									"    pm.response.to.be.ok",
+									"})",
+									"pm.test(\"response body has list of dashboards\", function () {",
+									"    const body = pm.response.json()",
+									"    const dashboardsList = body[4][\"0\"].lst",
+									"    pm.expect(dashboardsList[0]).to.eq(\"rec\")",
+									"    pm.expect(dashboardsList[1]).to.be.a(\"number\")",
+									"    const arrLength = dashboardsList[1]",
+									"    pm.expect(Object.keys(dashboardsList).length).to.eq(arrLength + 2)",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"type": "text",
+								"value": "application/vnd.apache.thrift.json"
+							},
+							{
+								"key": "Accept",
+								"type": "text",
+								"value": "application/vnd.apache.thrift.json"
+							},
+							{
+								"key": "Referer",
+								"type": "text",
+								"value": "http://localhost:6273/omnisci/dashboards"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "[1,\"get_dashboards\",1,0,{\"1\":{\"str\":\"IMMERSE_FAKE_SESSION_ID\"}}]"
+						},
+						"url": {
+							"raw": "http://localhost:6273",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "6273"
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Upload",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "fb6723f0-30cd-40c8-8c5d-b61b48a642d0",
+								"exec": [
+									"pm.test(\"response is 202 Accepted\", function () {",
+									"    pm.response.to.to.have.status(202)",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "sessionid",
+									"value": "",
+									"type": "text",
+									"disabled": true
+								},
+								{
+									"key": "binary",
+									"type": "file",
+									"src": "/Users/matthewmarcus/Downloads/gun-violence-database.zip"
+								}
+							]
+						},
+						"url": {
+							"raw": "http://localhost:6273/upload",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "6273",
+							"path": [
+								"upload"
+							]
+						},
+						"description": "Upload a file to the file system"
+					},
+					"response": []
+				},
+				{
+					"name": "Failed Session Create",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "a49bf0f6-63dc-4b1d-a359-5d604d56ce02",
+								"exec": [
+									"pm.test(\"response is 401 Not Authenticated\", function () {",
+									"    pm.response.to.have.status(401);",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"type": "text",
+								"value": "application/json"
+							},
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"username\":\"foo\",\"password\":\"bab\",\"dbName\":\"baz\"}"
+						},
+						"url": {
+							"raw": "http://localhost:6273/session/create",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "6273",
+							"path": [
+								"session",
+								"create"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Destroy Session - Explicit omnisci",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "8ce4f2b2-4ef6-4245-a88c-3be8de8d6162",
+								"exec": [
+									"pm.test(\"response is 204 no content success\", function () {",
+									"    pm.response.to.be.success",
+									"})",
+									"pm.test(\"response has oat cookie\", function () {",
+									"    pm.expect(getCookie(\"oat\")).to.be.ok",
+									"})",
+									"",
+									"function getCookie(cookieName) {",
+									"    let cookies = []",
+									"    pm.response.headers.each((header) => {",
+									"        if (header.key === \"Set-Cookie\") {",
+									"            cookies.push(header.value)",
+									"        }",
+									"    })",
+									"    ",
+									"    return cookies.find((cookie) => cookie.startsWith(cookieName + \"=\"))",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Referer",
+								"value": "http://localhost:6273/omnisci/dashboards",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:6273/session/destroy",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "6273",
+							"path": [
+								"session",
+								"destroy"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "FAILED Session Validate - DBContext omnisci",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "a49bf0f6-63dc-4b1d-a359-5d604d56ce02",
+								"exec": [
+									"pm.test(\"response is 401\", function () {",
+									"    pm.response.to.have.status(401)",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"type": "text",
+								"value": "application/json"
+							},
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							},
+							{
+								"key": "Referer",
+								"type": "text",
+								"value": "http://localhost:6273/omnisci/dashboards"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:6273/session/validate",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "6273",
+							"path": [
+								"session",
+								"validate"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Successful Session Validate - DBContext mapd",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "a49bf0f6-63dc-4b1d-a359-5d604d56ce02",
+								"exec": [
+									"pm.test(\"response is 200 ok\", function () {",
+									"    pm.response.to.be.ok;",
+									"})",
+									"",
+									"pm.test(\"response body should have items\", () => {",
+									"    const body = pm.response.json()",
+									"    pm.expect(body.username).to.be.ok",
+									"    pm.expect(body.dbName).to.be.ok",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"type": "text",
+								"value": "application/json"
+							},
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							},
+							{
+								"key": "Referer",
+								"type": "text",
+								"value": "http://localhost:6273/mapd/dashboards"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:6273/session/validate",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "6273",
+							"path": [
+								"session",
+								"validate"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Successful Session Validate - DBContext apache",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "a49bf0f6-63dc-4b1d-a359-5d604d56ce02",
+								"exec": [
+									"pm.test(\"response is 200 ok\", function () {",
+									"    pm.response.to.be.ok;",
+									"})",
+									"",
+									"pm.test(\"response body should have items\", () => {",
+									"    const body = pm.response.json()",
+									"    pm.expect(body.username).to.be.ok",
+									"    pm.expect(body.dbName).to.be.ok",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"type": "text",
+								"value": "application/json"
+							},
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							},
+							{
+								"key": "Referer",
+								"type": "text",
+								"value": "http://localhost:6273/apache/dashboards"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:6273/session/validate",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "6273",
+							"path": [
+								"session",
+								"validate"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Successful Session Validate - DBContext kiowa",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "a49bf0f6-63dc-4b1d-a359-5d604d56ce02",
+								"exec": [
+									"pm.test(\"response is 200 ok\", function () {",
+									"    pm.response.to.be.ok;",
+									"})",
+									"",
+									"pm.test(\"response body should have items\", () => {",
+									"    const body = pm.response.json()",
+									"    pm.expect(body.username).to.be.ok",
+									"    pm.expect(body.dbName).to.be.ok",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"type": "text",
+								"value": "application/json"
+							},
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							},
+							{
+								"key": "Referer",
+								"type": "text",
+								"value": "http://localhost:6273/kiowa/dashboards"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:6273/session/validate",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "6273",
+							"path": [
+								"session",
+								"validate"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Destroy All Sessions",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "8ce4f2b2-4ef6-4245-a88c-3be8de8d6162",
+								"exec": [
+									"pm.test(\"response is 204 no content success\", function () {",
+									"    pm.response.to.be.success",
+									"})",
+									"pm.test(\"response has EMPTY oat cookie\", function () {",
+									"    const cookie = getCookie(\"oat\")",
+									"    pm.expect(cookie).to.be.ok",
+									"    pm.expect(cookie.indexOf('oat=;') > -1).to.be.ok",
+									"})",
+									"",
+									"function getCookie(cookieName) {",
+									"    let cookies = []",
+									"    pm.response.headers.each((header) => {",
+									"        if (header.key === \"Set-Cookie\") {",
+									"            cookies.push(header.value)",
+									"        }",
+									"    })",
+									"    ",
+									"    return cookies.find((cookie) => cookie.startsWith(cookieName + \"=\"))",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:6273/session/destroy/all",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "6273",
+							"path": [
+								"session",
+								"destroy",
+								"all"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Failed Session Validate - Explicit apache",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "a49bf0f6-63dc-4b1d-a359-5d604d56ce02",
+								"exec": [
+									"pm.test(\"response is 401 Not Authenticated\", function () {",
+									"    pm.response.to.have.status(401)",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"type": "text",
+								"value": "application/json"
+							},
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							},
+							{
+								"key": "Referer",
+								"type": "text",
+								"value": "http://localhost:6273/apache/dashboards"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:6273/session/validate",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "6273",
+							"path": [
+								"session",
+								"validate"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Failed Session Validate - Explicit kiowa",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "a49bf0f6-63dc-4b1d-a359-5d604d56ce02",
+								"exec": [
+									"pm.test(\"response is 401 Not Authenticated\", function () {",
+									"    pm.response.to.have.status(401)",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"type": "text",
+								"value": "application/json"
+							},
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							},
+							{
+								"key": "Referer",
+								"type": "text",
+								"value": "http://localhost:6273/kiowa/dashboards"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:6273/session/validate",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "6273",
+							"path": [
+								"session",
+								"validate"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Successful Session Create - ExplicitDB mapd",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "42c8ce9f-d342-415f-9fb5-d3218cd5dfc4",
+								"exec": [
+									"pm.test(\"response is 201 created\", function () {",
+									"    pm.response.to.have.status(201);",
+									"})",
+									"pm.test(\"response body contains DB session info\", () => {",
+									"    const body = pm.response.json()",
+									"    pm.expect(body.user).to.be.a(\"string\")",
+									"    pm.expect(body.database).to.be.a(\"string\")",
+									"    pm.expect(body.start_time).to.be.a(\"number\")",
+									"    pm.expect(body.is_super).to.be.a(\"boolean\")",
+									"})",
+									"pm.test(\"response has oat cookie\", function () {",
+									"    pm.expect(getCookie(\"oat\")).to.be.ok",
+									"})",
+									"",
+									"function getCookie(cookieName) {",
+									"    let cookies = []",
+									"    pm.response.headers.each((header) => {",
+									"        if (header.key === \"Set-Cookie\") {",
+									"            cookies.push(header.value)",
+									"        }",
+									"    })",
+									"    ",
+									"    return cookies.find((cookie) => cookie.startsWith(cookieName + \"=\"))",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"type": "text",
+								"value": "application/json"
+							},
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"username\":\"{{LDAPUsername}}\",\"password\":\"{{LDAPPassword}}\",\"dbName\":\"mapd\"}"
+						},
+						"url": {
+							"raw": "http://localhost:6273/session/create",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "6273",
+							"path": [
+								"session",
+								"create"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Destroy Session - Implicit",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "8ce4f2b2-4ef6-4245-a88c-3be8de8d6162",
+								"exec": [
+									"pm.test(\"response is 204 no content success\", function () {",
+									"    pm.response.to.be.success",
+									"})",
+									"pm.test(\"response has EMPTY oat cookie\", function () {",
+									"    const cookie = getCookie(\"oat\")",
+									"    pm.expect(cookie).to.be.ok",
+									"    pm.expect(cookie.indexOf('oat=;') > -1).to.be.ok",
+									"})",
+									"",
+									"function getCookie(cookieName) {",
+									"    let cookies = []",
+									"    pm.response.headers.each((header) => {",
+									"        if (header.key === \"Set-Cookie\") {",
+									"            cookies.push(header.value)",
+									"        }",
+									"    })",
+									"    ",
+									"    return cookies.find((cookie) => cookie.startsWith(cookieName + \"=\"))",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:6273/session/destroy",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "6273",
+							"path": [
+								"session",
+								"destroy"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Failed Session Validate - Explicit mapd",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "a49bf0f6-63dc-4b1d-a359-5d604d56ce02",
+								"exec": [
+									"pm.test(\"response is 401 Not Authenticated\", function () {",
+									"    pm.response.to.have.status(401)",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"type": "text",
+								"value": "application/json"
+							},
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							},
+							{
+								"key": "Referer",
+								"value": "http://localhost:6273/mapd/dashboards",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:6273/session/validate",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "6273",
+							"path": [
+								"session",
+								"validate"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Failed Session Validate  - Implicit",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "a49bf0f6-63dc-4b1d-a359-5d604d56ce02",
+								"exec": [
+									"pm.test(\"response is 401 Not Authenticated\", function () {",
+									"    pm.response.to.have.status(401)",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"type": "text",
+								"value": "application/json"
+							},
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:6273/session/validate",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "6273",
+							"path": [
+								"session",
+								"validate"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Failed Dashboards Thrift Proxy Call",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "47443220-800e-42d7-850b-5171ac611829",
+								"exec": [
+									"pm.test(\"response is 200 created\", function () {",
+									"    pm.response.to.have.status(200);",
+									"})",
+									"pm.test(\"Body should contain omniscidb error 'Session not valid.'\", () => {",
+									"    pm.expect(pm.response.text().includes('Session not valid.')).to.be.ok",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"type": "text",
+								"value": "application/vnd.apache.thrift.json"
+							},
+							{
+								"key": "Accept",
+								"type": "text",
+								"value": "application/vnd.apache.thrift.json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "[1,\"get_dashboards\",1,0,{\"1\":{\"str\":\"\"}}]"
+						},
+						"url": {
+							"raw": "http://localhost:6273",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "6273"
+						}
+					},
+					"response": []
+				}
+			],
+			"protocolProfileBehavior": {}
+		},
+		{
+			"name": "servers.json request",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "f83069bb-cdf4-4864-8ce6-8e12333a5358",
+						"exec": [
+							"pm.test(\"response is 200 ok\", function () {",
+							"    pm.response.to.be.ok",
+							"})",
+							"pm.test(\"response body has expected servers config structure\", function () {",
+							"    const body = pm.response.json()",
+							"    pm.expect(body.length).to.eq(1)",
+							"    const serversConfig = body[0]",
+							"    const configKeys = Object.keys(serversConfig)",
+							"    const expectedKeys = ['database', 'host', 'master', 'password', 'port', 'username']",
+							"    configKeys.each(k => {",
+							"        pm.expect(expectedKeys.includes(k))",
+							"    })",
+							"})"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "http://localhost:6273/servers.json",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "6273",
+					"path": [
+						"servers.json"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Version.txt GET",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "64aa1922-fd16-4552-aba9-bf295385b27b",
+						"exec": [
+							"pm.test(\"response is 200 ok\", function () {",
+							"    pm.response.to.be.ok;",
+							"})"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:6273/version.txt",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "6273",
+					"path": [
+						"version.txt"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"id": "d09c18ee-2949-4101-bacb-96dafc77366a",
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"id": "ac7a6cfc-2bd8-4452-b270-da1c8ca27544",
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"protocolProfileBehavior": {}
+}

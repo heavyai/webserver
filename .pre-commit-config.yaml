@@ -1,0 +1,22 @@
+# SPDX-FileCopyrightText: Copyright (c) 2026, NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+#
+# License-header enforcement via pre-commit + rapidsai/pre-commit-hooks.
+
+exclude: |
+  (?x)
+    ^vendor/|
+    ^internal/db_thrift_client/
+
+repos:
+
+  # Insert/maintain the NVIDIA SPDX header.
+  - repo: https://github.com/rapidsai/pre-commit-hooks
+    rev: v1.5.1
+    hooks:
+      - id: verify-copyright
+        args: [--fix, --spdx]
+        files: |
+          (?x)
+            [.](go|sh)$
+

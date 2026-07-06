@@ -1,0 +1,41 @@
+version: '3'
+
+volumes:
+  mysql_data:
+      driver: local
+
+services:
+  mysql:
+      image: mysql:5.7
+      volumes:
+        - mysql_data:/var/lib/mysql
+      environment:
+        MYSQL_ROOT_PASSWORD: root
+        MYSQL_DATABASE: keycloak
+        MYSQL_USER: keycloak
+        MYSQL_PASSWORD: password
+  keycloak:
+      image: jboss/keycloak:6.0.1
+      environment:
+        DB_VENDOR: MYSQL
+        DB_ADDR: mysql
+        DB_DATABASE: keycloak
+        DB_USER: keycloak
+        DB_PASSWORD: password
+        KEYCLOAK_USER: admin
+        KEYCLOAK_PASSWORD: Pa55w0rd
+      ports:
+        - 8081:8080
+      depends_on:
+        - mysql
+  omnisci-server:
+    image: newweb:latest
+    build: ./
+    ports:
+      - 6273:6273
+      - 6274:6274
+      - 6278:6278
+    volumes:
+      - ./omniscidata:/heavy-storage
+    depends_on:
+        - keycloak

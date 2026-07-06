@@ -1,0 +1,60 @@
+version: '3.7'
+services:
+
+  omnisciserver:
+    container_name: omnisciserver
+    image: docker-internal.mapd.com/mapd/mapd-cpu
+    restart: always
+    ipc: shareable
+    volumes:
+      - ./heavy:/heavy-storage
+      - ./heavy/data/mapd_import/jhub_omnisci_dropbox:/jhub_omnisci_dropbox
+    networks:
+      - omnisci-frontend
+      - omnisci-backend
+    ports:
+      - "6274:6274"
+      - "6278:6278"
+
+  jupyterhub:
+    container_name: jupyterhub
+    image: omnisci/omnisci-jupyterhub:v0.2
+    restart: on-failure
+    networks:
+      - omnisci-backend
+    depends_on:
+      - omnisciserver
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    ports:
+      - 8000:8000
+      - 8081:8081
+    environment:
+      ### Required settings ###
+      # Note: if changing this, do not remove the &jlabimage anchor
+      DOCKER_JUPYTER_LAB_IMAGE: &jlabimage heavy/heavy-jupyterlab-cpu:latest
+      OMNISCI_HOST: omnisciserver
+      OMNISCI_JUPYTER_ROLE: omnisci_jupyter
+      JLAB_OMNISCI_IMPORT_VOLUME_PATH: ${PWD}/heavy/data/omnisci_import/jhub_omnisci_dropbox  # Local Docker host path for where to mount the shared directory available to the OmniSciDB server for file ingest
+      JLAB_USER_VOLUME_PATH: ${PWD}/heavy/jupyter/    # Local Docker host path to be used for user Jupyter Lab home directory volume mapping
+      JUPYTER_DEBUG: "true"                               # Turn on / off debugging for Jupyter Hub and Lab
+      OMNISCI_PORT: 6278 # Port that Jupyter Hub should use to connect to OmniSci. Ensure this matches the protocol
+      OMNISCI_PROTOCOL: http # Protocol that Jupyter Hub should use to connect to OmniSci. Ensure this is "binary" if using binary encryption
+      OMNISCI_ALLOW_SUPERUSER_ROLE: "true"                  # Authorize super users access to Jupyter without needing to be given the OmniSci role specified in OMNISCI_JUPYTER_ROLE
+      SPAWNER_ENV_OMNISCI_PORT: 6278                      # Port of the OmniSci server for Lab containers to connect to by default
+      SPAWNER_ENV_OMNISCI_PROTOCOL: http                # Protocol of the OmniSci server for Lab containers to connect to by default
+  # The purpose of this is to make sure the jlabimage is pulled because jupyterhub will not pull it automatically when launching
+  jupyterlab-tmp:
+    image: *jlabimage
+    command: echo
+    networks:
+      - omnisci-backend
+
+
+networks:
+  omnisci-frontend:
+    driver: bridge
+    name: heavy-frontend
+  omnisci-backend:
+    driver: bridge
+    name: heavy-backend
