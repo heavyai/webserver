@@ -54,8 +54,6 @@ func Usage() {
 	fmt.Fprintln(os.Stderr, "   get_memory(TSessionId session, string memory_level)")
 	fmt.Fprintln(os.Stderr, "  void clear_cpu_memory(TSessionId session)")
 	fmt.Fprintln(os.Stderr, "  void clear_gpu_memory(TSessionId session)")
-	fmt.Fprintln(os.Stderr, "  void set_cur_session(TSessionId parent_session, TSessionId leaf_session, string start_time_str, string label, bool for_running_query_kernel)")
-	fmt.Fprintln(os.Stderr, "  void invalidate_cur_session(TSessionId parent_session, TSessionId leaf_session, string start_time_str, string label, bool for_running_query_kernel)")
 	fmt.Fprintln(os.Stderr, "  void set_table_epoch(TSessionId session, i32 db_id, i32 table_id, i32 new_epoch)")
 	fmt.Fprintln(os.Stderr, "  void set_table_epoch_by_name(TSessionId session, string table_name, i32 new_epoch)")
 	fmt.Fprintln(os.Stderr, "  i32 get_table_epoch(TSessionId session, i32 db_id, i32 table_id)")
@@ -64,7 +62,6 @@ func Usage() {
 	fmt.Fprintln(os.Stderr, "  void set_table_epochs(TSessionId session, i32 db_id,  table_epochs)")
 	fmt.Fprintln(os.Stderr, "  TSessionInfo get_session_info(TSessionId session)")
 	fmt.Fprintln(os.Stderr, "   get_queries_info(TSessionId session)")
-	fmt.Fprintln(os.Stderr, "  void set_leaf_info(TSessionId session, TLeafInfo leaf_info)")
 	fmt.Fprintln(os.Stderr, "  TQueryResult sql_execute(TSessionId session, string query, bool column_format, string nonce, i32 first_n, i32 at_most_n)")
 	fmt.Fprintln(os.Stderr, "  TDataFrame sql_execute_df(TSessionId session, string query, TDeviceType device_type, i32 device_id, i32 first_n, TArrowTransport transport_method)")
 	fmt.Fprintln(os.Stderr, "  TDataFrame sql_execute_gdf(TSessionId session, string query, i32 device_id, i32 first_n)")
@@ -97,23 +94,13 @@ func Usage() {
 	fmt.Fprintln(os.Stderr, "  void load_table_binary_arrow(TSessionId session, string table_name, string arrow_stream, bool use_column_names)")
 	fmt.Fprintln(os.Stderr, "  void load_table(TSessionId session, string table_name,  rows,  column_names)")
 	fmt.Fprintln(os.Stderr, "  TDetectResult detect_column_types(TSessionId session, string file_name, TCopyParams copy_params)")
-	fmt.Fprintln(os.Stderr, "  void create_table(TSessionId session, string table_name, TRowDescriptor row_desc, TCreateParams create_params)")
+	fmt.Fprintln(os.Stderr, "  void create_table(TSessionId session, string table_name, TRowDescriptor row_desc)")
 	fmt.Fprintln(os.Stderr, "  void import_table(TSessionId session, string table_name, string file_name, TCopyParams copy_params)")
-	fmt.Fprintln(os.Stderr, "  void import_geo_table(TSessionId session, string table_name, string file_name, TCopyParams copy_params, TRowDescriptor row_desc, TCreateParams create_params)")
+	fmt.Fprintln(os.Stderr, "  void import_geo_table(TSessionId session, string table_name, string file_name, TCopyParams copy_params, TRowDescriptor row_desc)")
 	fmt.Fprintln(os.Stderr, "  TImportStatus import_table_status(TSessionId session, string import_id)")
 	fmt.Fprintln(os.Stderr, "  string get_first_geo_file_in_archive(TSessionId session, string archive_path, TCopyParams copy_params)")
 	fmt.Fprintln(os.Stderr, "   get_all_files_in_archive(TSessionId session, string archive_path, TCopyParams copy_params)")
 	fmt.Fprintln(os.Stderr, "   get_layers_in_geo_file(TSessionId session, string file_name, TCopyParams copy_params)")
-	fmt.Fprintln(os.Stderr, "  i64 query_get_outer_fragment_count(TSessionId session, string query)")
-	fmt.Fprintln(os.Stderr, "  TTableMeta check_table_consistency(TSessionId session, i32 table_id)")
-	fmt.Fprintln(os.Stderr, "  TPendingQuery start_query(TSessionId leaf_session, TSessionId parent_session, string query_ra, string start_time_str, bool just_explain,  outer_fragment_indices)")
-	fmt.Fprintln(os.Stderr, "  TStepResult execute_query_step(TPendingQuery pending_query, TSubqueryId subquery_id, string start_time_str)")
-	fmt.Fprintln(os.Stderr, "  void broadcast_serialized_rows(TSerializedRows serialized_rows, TRowDescriptor row_desc, TQueryId query_id, TSubqueryId subquery_id, bool is_final_subquery_result)")
-	fmt.Fprintln(os.Stderr, "  TPendingRenderQuery start_render_query(TSessionId session, i64 widget_id, i16 node_idx, string vega_json)")
-	fmt.Fprintln(os.Stderr, "  TRenderStepResult execute_next_render_step(TPendingRenderQuery pending_render, TRenderAggDataMap merged_data)")
-	fmt.Fprintln(os.Stderr, "  void insert_data(TSessionId session, TInsertData insert_data)")
-	fmt.Fprintln(os.Stderr, "  void insert_chunks(TSessionId session, TInsertChunks insert_chunks)")
-	fmt.Fprintln(os.Stderr, "  void checkpoint(TSessionId session, i32 table_id)")
 	fmt.Fprintln(os.Stderr, "   get_roles(TSessionId session)")
 	fmt.Fprintln(os.Stderr, "   get_db_objects_for_grantee(TSessionId session, string roleName)")
 	fmt.Fprintln(os.Stderr, "   get_db_object_privs(TSessionId session, string objectName, TDBObjectType type)")
@@ -513,42 +500,6 @@ func main() {
 		fmt.Print(client.ClearGpuMemory(context.Background(), value0))
 		fmt.Print("\n")
 		break
-	case "set_cur_session":
-		if flag.NArg() - 1 != 5 {
-			fmt.Fprintln(os.Stderr, "SetCurSession requires 5 args")
-			flag.Usage()
-		}
-		argvalue0 := flag.Arg(1)
-		value0 := heavy.TSessionId(argvalue0)
-		argvalue1 := flag.Arg(2)
-		value1 := heavy.TSessionId(argvalue1)
-		argvalue2 := flag.Arg(3)
-		value2 := argvalue2
-		argvalue3 := flag.Arg(4)
-		value3 := argvalue3
-		argvalue4 := flag.Arg(5) == "true"
-		value4 := argvalue4
-		fmt.Print(client.SetCurSession(context.Background(), value0, value1, value2, value3, value4))
-		fmt.Print("\n")
-		break
-	case "invalidate_cur_session":
-		if flag.NArg() - 1 != 5 {
-			fmt.Fprintln(os.Stderr, "InvalidateCurSession requires 5 args")
-			flag.Usage()
-		}
-		argvalue0 := flag.Arg(1)
-		value0 := heavy.TSessionId(argvalue0)
-		argvalue1 := flag.Arg(2)
-		value1 := heavy.TSessionId(argvalue1)
-		argvalue2 := flag.Arg(3)
-		value2 := argvalue2
-		argvalue3 := flag.Arg(4)
-		value3 := argvalue3
-		argvalue4 := flag.Arg(5) == "true"
-		value4 := argvalue4
-		fmt.Print(client.InvalidateCurSession(context.Background(), value0, value1, value2, value3, value4))
-		fmt.Print("\n")
-		break
 	case "set_table_epoch":
 		if flag.NArg() - 1 != 4 {
 			fmt.Fprintln(os.Stderr, "SetTableEpoch requires 4 args")
@@ -556,22 +507,22 @@ func main() {
 		}
 		argvalue0 := flag.Arg(1)
 		value0 := heavy.TSessionId(argvalue0)
-		tmp1, err739 := (strconv.Atoi(flag.Arg(2)))
-		if err739 != nil {
+		tmp1, err609 := (strconv.Atoi(flag.Arg(2)))
+		if err609 != nil {
 			Usage()
 			return
 		}
 		argvalue1 := int32(tmp1)
 		value1 := argvalue1
-		tmp2, err740 := (strconv.Atoi(flag.Arg(3)))
-		if err740 != nil {
+		tmp2, err610 := (strconv.Atoi(flag.Arg(3)))
+		if err610 != nil {
 			Usage()
 			return
 		}
 		argvalue2 := int32(tmp2)
 		value2 := argvalue2
-		tmp3, err741 := (strconv.Atoi(flag.Arg(4)))
-		if err741 != nil {
+		tmp3, err611 := (strconv.Atoi(flag.Arg(4)))
+		if err611 != nil {
 			Usage()
 			return
 		}
@@ -589,8 +540,8 @@ func main() {
 		value0 := heavy.TSessionId(argvalue0)
 		argvalue1 := flag.Arg(2)
 		value1 := argvalue1
-		tmp2, err744 := (strconv.Atoi(flag.Arg(3)))
-		if err744 != nil {
+		tmp2, err614 := (strconv.Atoi(flag.Arg(3)))
+		if err614 != nil {
 			Usage()
 			return
 		}
@@ -606,15 +557,15 @@ func main() {
 		}
 		argvalue0 := flag.Arg(1)
 		value0 := heavy.TSessionId(argvalue0)
-		tmp1, err746 := (strconv.Atoi(flag.Arg(2)))
-		if err746 != nil {
+		tmp1, err616 := (strconv.Atoi(flag.Arg(2)))
+		if err616 != nil {
 			Usage()
 			return
 		}
 		argvalue1 := int32(tmp1)
 		value1 := argvalue1
-		tmp2, err747 := (strconv.Atoi(flag.Arg(3)))
-		if err747 != nil {
+		tmp2, err617 := (strconv.Atoi(flag.Arg(3)))
+		if err617 != nil {
 			Usage()
 			return
 		}
@@ -642,15 +593,15 @@ func main() {
 		}
 		argvalue0 := flag.Arg(1)
 		value0 := heavy.TSessionId(argvalue0)
-		tmp1, err751 := (strconv.Atoi(flag.Arg(2)))
-		if err751 != nil {
+		tmp1, err621 := (strconv.Atoi(flag.Arg(2)))
+		if err621 != nil {
 			Usage()
 			return
 		}
 		argvalue1 := int32(tmp1)
 		value1 := argvalue1
-		tmp2, err752 := (strconv.Atoi(flag.Arg(3)))
-		if err752 != nil {
+		tmp2, err622 := (strconv.Atoi(flag.Arg(3)))
+		if err622 != nil {
 			Usage()
 			return
 		}
@@ -666,26 +617,26 @@ func main() {
 		}
 		argvalue0 := flag.Arg(1)
 		value0 := heavy.TSessionId(argvalue0)
-		tmp1, err754 := (strconv.Atoi(flag.Arg(2)))
-		if err754 != nil {
+		tmp1, err624 := (strconv.Atoi(flag.Arg(2)))
+		if err624 != nil {
 			Usage()
 			return
 		}
 		argvalue1 := int32(tmp1)
 		value1 := argvalue1
-		arg755 := flag.Arg(3)
-		mbTrans756 := thrift.NewTMemoryBufferLen(len(arg755))
-		defer mbTrans756.Close()
-		_, err757 := mbTrans756.WriteString(arg755)
-		if err757 != nil {
+		arg625 := flag.Arg(3)
+		mbTrans626 := thrift.NewTMemoryBufferLen(len(arg625))
+		defer mbTrans626.Close()
+		_, err627 := mbTrans626.WriteString(arg625)
+		if err627 != nil {
 			Usage()
 			return
 		}
-		factory758 := thrift.NewTJSONProtocolFactory()
-		jsProt759 := factory758.GetProtocol(mbTrans756)
+		factory628 := thrift.NewTJSONProtocolFactory()
+		jsProt629 := factory628.GetProtocol(mbTrans626)
 		containerStruct2 := heavy.NewHeavySetTableEpochsArgs()
-		err760 := containerStruct2.ReadField3(context.Background(), jsProt759)
-		if err760 != nil {
+		err630 := containerStruct2.ReadField3(context.Background(), jsProt629)
+		if err630 != nil {
 			Usage()
 			return
 		}
@@ -714,33 +665,6 @@ func main() {
 		fmt.Print(client.GetQueriesInfo(context.Background(), value0))
 		fmt.Print("\n")
 		break
-	case "set_leaf_info":
-		if flag.NArg() - 1 != 2 {
-			fmt.Fprintln(os.Stderr, "SetLeafInfo requires 2 args")
-			flag.Usage()
-		}
-		argvalue0 := flag.Arg(1)
-		value0 := heavy.TSessionId(argvalue0)
-		arg764 := flag.Arg(2)
-		mbTrans765 := thrift.NewTMemoryBufferLen(len(arg764))
-		defer mbTrans765.Close()
-		_, err766 := mbTrans765.WriteString(arg764)
-		if err766 != nil {
-			Usage()
-			return
-		}
-		factory767 := thrift.NewTJSONProtocolFactory()
-		jsProt768 := factory767.GetProtocol(mbTrans765)
-		argvalue1 := heavy.NewTLeafInfo()
-		err769 := argvalue1.Read(context.Background(), jsProt768)
-		if err769 != nil {
-			Usage()
-			return
-		}
-		value1 := argvalue1
-		fmt.Print(client.SetLeafInfo(context.Background(), value0, value1))
-		fmt.Print("\n")
-		break
 	case "sql_execute":
 		if flag.NArg() - 1 != 6 {
 			fmt.Fprintln(os.Stderr, "SqlExecute requires 6 args")
@@ -754,15 +678,15 @@ func main() {
 		value2 := argvalue2
 		argvalue3 := flag.Arg(4)
 		value3 := argvalue3
-		tmp4, err774 := (strconv.Atoi(flag.Arg(5)))
-		if err774 != nil {
+		tmp4, err637 := (strconv.Atoi(flag.Arg(5)))
+		if err637 != nil {
 			Usage()
 			return
 		}
 		argvalue4 := int32(tmp4)
 		value4 := argvalue4
-		tmp5, err775 := (strconv.Atoi(flag.Arg(6)))
-		if err775 != nil {
+		tmp5, err638 := (strconv.Atoi(flag.Arg(6)))
+		if err638 != nil {
 			Usage()
 			return
 		}
@@ -787,15 +711,15 @@ func main() {
 		}
 		argvalue2 := heavy.TDeviceType(tmp2)
 		value2 := argvalue2
-		tmp3, err778 := (strconv.Atoi(flag.Arg(4)))
-		if err778 != nil {
+		tmp3, err641 := (strconv.Atoi(flag.Arg(4)))
+		if err641 != nil {
 			Usage()
 			return
 		}
 		argvalue3 := int32(tmp3)
 		value3 := argvalue3
-		tmp4, err779 := (strconv.Atoi(flag.Arg(5)))
-		if err779 != nil {
+		tmp4, err642 := (strconv.Atoi(flag.Arg(5)))
+		if err642 != nil {
 			Usage()
 			return
 		}
@@ -820,15 +744,15 @@ func main() {
 		value0 := heavy.TSessionId(argvalue0)
 		argvalue1 := flag.Arg(2)
 		value1 := argvalue1
-		tmp2, err782 := (strconv.Atoi(flag.Arg(3)))
-		if err782 != nil {
+		tmp2, err645 := (strconv.Atoi(flag.Arg(3)))
+		if err645 != nil {
 			Usage()
 			return
 		}
 		argvalue2 := int32(tmp2)
 		value2 := argvalue2
-		tmp3, err783 := (strconv.Atoi(flag.Arg(4)))
-		if err783 != nil {
+		tmp3, err646 := (strconv.Atoi(flag.Arg(4)))
+		if err646 != nil {
 			Usage()
 			return
 		}
@@ -844,19 +768,19 @@ func main() {
 		}
 		argvalue0 := flag.Arg(1)
 		value0 := heavy.TSessionId(argvalue0)
-		arg785 := flag.Arg(2)
-		mbTrans786 := thrift.NewTMemoryBufferLen(len(arg785))
-		defer mbTrans786.Close()
-		_, err787 := mbTrans786.WriteString(arg785)
-		if err787 != nil {
+		arg648 := flag.Arg(2)
+		mbTrans649 := thrift.NewTMemoryBufferLen(len(arg648))
+		defer mbTrans649.Close()
+		_, err650 := mbTrans649.WriteString(arg648)
+		if err650 != nil {
 			Usage()
 			return
 		}
-		factory788 := thrift.NewTJSONProtocolFactory()
-		jsProt789 := factory788.GetProtocol(mbTrans786)
+		factory651 := thrift.NewTJSONProtocolFactory()
+		jsProt652 := factory651.GetProtocol(mbTrans649)
 		argvalue1 := heavy.NewTDataFrame()
-		err790 := argvalue1.Read(context.Background(), jsProt789)
-		if err790 != nil {
+		err653 := argvalue1.Read(context.Background(), jsProt652)
+		if err653 != nil {
 			Usage()
 			return
 		}
@@ -868,8 +792,8 @@ func main() {
 		}
 		argvalue2 := heavy.TDeviceType(tmp2)
 		value2 := argvalue2
-		tmp3, err791 := (strconv.Atoi(flag.Arg(4)))
-		if err791 != nil {
+		tmp3, err654 := (strconv.Atoi(flag.Arg(4)))
+		if err654 != nil {
 			Usage()
 			return
 		}
@@ -911,8 +835,8 @@ func main() {
 		value0 := heavy.TSessionId(argvalue0)
 		argvalue1 := flag.Arg(2)
 		value1 := argvalue1
-		tmp2, err798 := (strconv.Atoi(flag.Arg(3)))
-		if err798 != nil {
+		tmp2, err661 := (strconv.Atoi(flag.Arg(3)))
+		if err661 != nil {
 			Usage()
 			return
 		}
@@ -945,16 +869,16 @@ func main() {
 		}
 		argvalue0 := flag.Arg(1)
 		value0 := heavy.TSessionId(argvalue0)
-		argvalue1, err801 := (strconv.ParseInt(flag.Arg(2), 10, 64))
-		if err801 != nil {
+		argvalue1, err664 := (strconv.ParseInt(flag.Arg(2), 10, 64))
+		if err664 != nil {
 			Usage()
 			return
 		}
 		value1 := argvalue1
 		argvalue2 := flag.Arg(3)
 		value2 := argvalue2
-		tmp3, err803 := (strconv.Atoi(flag.Arg(4)))
-		if err803 != nil {
+		tmp3, err666 := (strconv.Atoi(flag.Arg(4)))
+		if err666 != nil {
 			Usage()
 			return
 		}
@@ -972,42 +896,42 @@ func main() {
 		}
 		argvalue0 := flag.Arg(1)
 		value0 := heavy.TSessionId(argvalue0)
-		argvalue1, err806 := (strconv.ParseInt(flag.Arg(2), 10, 64))
-		if err806 != nil {
+		argvalue1, err669 := (strconv.ParseInt(flag.Arg(2), 10, 64))
+		if err669 != nil {
 			Usage()
 			return
 		}
 		value1 := argvalue1
-		arg807 := flag.Arg(3)
-		mbTrans808 := thrift.NewTMemoryBufferLen(len(arg807))
-		defer mbTrans808.Close()
-		_, err809 := mbTrans808.WriteString(arg807)
-		if err809 != nil {
+		arg670 := flag.Arg(3)
+		mbTrans671 := thrift.NewTMemoryBufferLen(len(arg670))
+		defer mbTrans671.Close()
+		_, err672 := mbTrans671.WriteString(arg670)
+		if err672 != nil {
 			Usage()
 			return
 		}
-		factory810 := thrift.NewTJSONProtocolFactory()
-		jsProt811 := factory810.GetProtocol(mbTrans808)
+		factory673 := thrift.NewTJSONProtocolFactory()
+		jsProt674 := factory673.GetProtocol(mbTrans671)
 		argvalue2 := heavy.NewTPixel()
-		err812 := argvalue2.Read(context.Background(), jsProt811)
-		if err812 != nil {
+		err675 := argvalue2.Read(context.Background(), jsProt674)
+		if err675 != nil {
 			Usage()
 			return
 		}
 		value2 := argvalue2
-		arg813 := flag.Arg(4)
-		mbTrans814 := thrift.NewTMemoryBufferLen(len(arg813))
-		defer mbTrans814.Close()
-		_, err815 := mbTrans814.WriteString(arg813)
-		if err815 != nil {
+		arg676 := flag.Arg(4)
+		mbTrans677 := thrift.NewTMemoryBufferLen(len(arg676))
+		defer mbTrans677.Close()
+		_, err678 := mbTrans677.WriteString(arg676)
+		if err678 != nil {
 			Usage()
 			return
 		}
-		factory816 := thrift.NewTJSONProtocolFactory()
-		jsProt817 := factory816.GetProtocol(mbTrans814)
+		factory679 := thrift.NewTJSONProtocolFactory()
+		jsProt680 := factory679.GetProtocol(mbTrans677)
 		containerStruct3 := heavy.NewHeavyGetResultRowForPixelArgs()
-		err818 := containerStruct3.ReadField4(context.Background(), jsProt817)
-		if err818 != nil {
+		err681 := containerStruct3.ReadField4(context.Background(), jsProt680)
+		if err681 != nil {
 			Usage()
 			return
 		}
@@ -1015,8 +939,8 @@ func main() {
 		value3 := argvalue3
 		argvalue4 := flag.Arg(5) == "true"
 		value4 := argvalue4
-		tmp5, err820 := (strconv.Atoi(flag.Arg(6)))
-		if err820 != nil {
+		tmp5, err683 := (strconv.Atoi(flag.Arg(6)))
+		if err683 != nil {
 			Usage()
 			return
 		}
@@ -1034,19 +958,19 @@ func main() {
 		}
 		argvalue0 := flag.Arg(1)
 		value0 := heavy.TSessionId(argvalue0)
-		arg823 := flag.Arg(2)
-		mbTrans824 := thrift.NewTMemoryBufferLen(len(arg823))
-		defer mbTrans824.Close()
-		_, err825 := mbTrans824.WriteString(arg823)
-		if err825 != nil {
+		arg686 := flag.Arg(2)
+		mbTrans687 := thrift.NewTMemoryBufferLen(len(arg686))
+		defer mbTrans687.Close()
+		_, err688 := mbTrans687.WriteString(arg686)
+		if err688 != nil {
 			Usage()
 			return
 		}
-		factory826 := thrift.NewTJSONProtocolFactory()
-		jsProt827 := factory826.GetProtocol(mbTrans824)
+		factory689 := thrift.NewTJSONProtocolFactory()
+		jsProt690 := factory689.GetProtocol(mbTrans687)
 		argvalue1 := heavy.NewTCustomExpression()
-		err828 := argvalue1.Read(context.Background(), jsProt827)
-		if err828 != nil {
+		err691 := argvalue1.Read(context.Background(), jsProt690)
+		if err691 != nil {
 			Usage()
 			return
 		}
@@ -1071,8 +995,8 @@ func main() {
 		}
 		argvalue0 := flag.Arg(1)
 		value0 := heavy.TSessionId(argvalue0)
-		tmp1, err831 := (strconv.Atoi(flag.Arg(2)))
-		if err831 != nil {
+		tmp1, err694 := (strconv.Atoi(flag.Arg(2)))
+		if err694 != nil {
 			Usage()
 			return
 		}
@@ -1090,19 +1014,19 @@ func main() {
 		}
 		argvalue0 := flag.Arg(1)
 		value0 := heavy.TSessionId(argvalue0)
-		arg834 := flag.Arg(2)
-		mbTrans835 := thrift.NewTMemoryBufferLen(len(arg834))
-		defer mbTrans835.Close()
-		_, err836 := mbTrans835.WriteString(arg834)
-		if err836 != nil {
+		arg697 := flag.Arg(2)
+		mbTrans698 := thrift.NewTMemoryBufferLen(len(arg697))
+		defer mbTrans698.Close()
+		_, err699 := mbTrans698.WriteString(arg697)
+		if err699 != nil {
 			Usage()
 			return
 		}
-		factory837 := thrift.NewTJSONProtocolFactory()
-		jsProt838 := factory837.GetProtocol(mbTrans835)
+		factory700 := thrift.NewTJSONProtocolFactory()
+		jsProt701 := factory700.GetProtocol(mbTrans698)
 		containerStruct1 := heavy.NewHeavyDeleteCustomExpressionsArgs()
-		err839 := containerStruct1.ReadField2(context.Background(), jsProt838)
-		if err839 != nil {
+		err702 := containerStruct1.ReadField2(context.Background(), jsProt701)
+		if err702 != nil {
 			Usage()
 			return
 		}
@@ -1120,8 +1044,8 @@ func main() {
 		}
 		argvalue0 := flag.Arg(1)
 		value0 := heavy.TSessionId(argvalue0)
-		tmp1, err842 := (strconv.Atoi(flag.Arg(2)))
-		if err842 != nil {
+		tmp1, err705 := (strconv.Atoi(flag.Arg(2)))
+		if err705 != nil {
 			Usage()
 			return
 		}
@@ -1165,8 +1089,8 @@ func main() {
 		}
 		argvalue0 := flag.Arg(1)
 		value0 := heavy.TSessionId(argvalue0)
-		tmp1, err850 := (strconv.Atoi(flag.Arg(2)))
-		if err850 != nil {
+		tmp1, err713 := (strconv.Atoi(flag.Arg(2)))
+		if err713 != nil {
 			Usage()
 			return
 		}
@@ -1192,8 +1116,8 @@ func main() {
 		}
 		argvalue0 := flag.Arg(1)
 		value0 := heavy.TSessionId(argvalue0)
-		tmp1, err857 := (strconv.Atoi(flag.Arg(2)))
-		if err857 != nil {
+		tmp1, err720 := (strconv.Atoi(flag.Arg(2)))
+		if err720 != nil {
 			Usage()
 			return
 		}
@@ -1209,55 +1133,55 @@ func main() {
 		}
 		argvalue0 := flag.Arg(1)
 		value0 := heavy.TSessionId(argvalue0)
-		arg859 := flag.Arg(2)
-		mbTrans860 := thrift.NewTMemoryBufferLen(len(arg859))
-		defer mbTrans860.Close()
-		_, err861 := mbTrans860.WriteString(arg859)
-		if err861 != nil {
+		arg722 := flag.Arg(2)
+		mbTrans723 := thrift.NewTMemoryBufferLen(len(arg722))
+		defer mbTrans723.Close()
+		_, err724 := mbTrans723.WriteString(arg722)
+		if err724 != nil {
 			Usage()
 			return
 		}
-		factory862 := thrift.NewTJSONProtocolFactory()
-		jsProt863 := factory862.GetProtocol(mbTrans860)
+		factory725 := thrift.NewTJSONProtocolFactory()
+		jsProt726 := factory725.GetProtocol(mbTrans723)
 		containerStruct1 := heavy.NewHeavyShareDashboardsArgs()
-		err864 := containerStruct1.ReadField2(context.Background(), jsProt863)
-		if err864 != nil {
+		err727 := containerStruct1.ReadField2(context.Background(), jsProt726)
+		if err727 != nil {
 			Usage()
 			return
 		}
 		argvalue1 := containerStruct1.DashboardIds
 		value1 := argvalue1
-		arg865 := flag.Arg(3)
-		mbTrans866 := thrift.NewTMemoryBufferLen(len(arg865))
-		defer mbTrans866.Close()
-		_, err867 := mbTrans866.WriteString(arg865)
-		if err867 != nil {
+		arg728 := flag.Arg(3)
+		mbTrans729 := thrift.NewTMemoryBufferLen(len(arg728))
+		defer mbTrans729.Close()
+		_, err730 := mbTrans729.WriteString(arg728)
+		if err730 != nil {
 			Usage()
 			return
 		}
-		factory868 := thrift.NewTJSONProtocolFactory()
-		jsProt869 := factory868.GetProtocol(mbTrans866)
+		factory731 := thrift.NewTJSONProtocolFactory()
+		jsProt732 := factory731.GetProtocol(mbTrans729)
 		containerStruct2 := heavy.NewHeavyShareDashboardsArgs()
-		err870 := containerStruct2.ReadField3(context.Background(), jsProt869)
-		if err870 != nil {
+		err733 := containerStruct2.ReadField3(context.Background(), jsProt732)
+		if err733 != nil {
 			Usage()
 			return
 		}
 		argvalue2 := containerStruct2.Groups
 		value2 := argvalue2
-		arg871 := flag.Arg(4)
-		mbTrans872 := thrift.NewTMemoryBufferLen(len(arg871))
-		defer mbTrans872.Close()
-		_, err873 := mbTrans872.WriteString(arg871)
-		if err873 != nil {
+		arg734 := flag.Arg(4)
+		mbTrans735 := thrift.NewTMemoryBufferLen(len(arg734))
+		defer mbTrans735.Close()
+		_, err736 := mbTrans735.WriteString(arg734)
+		if err736 != nil {
 			Usage()
 			return
 		}
-		factory874 := thrift.NewTJSONProtocolFactory()
-		jsProt875 := factory874.GetProtocol(mbTrans872)
+		factory737 := thrift.NewTJSONProtocolFactory()
+		jsProt738 := factory737.GetProtocol(mbTrans735)
 		argvalue3 := heavy.NewTDashboardPermissions()
-		err876 := argvalue3.Read(context.Background(), jsProt875)
-		if err876 != nil {
+		err739 := argvalue3.Read(context.Background(), jsProt738)
+		if err739 != nil {
 			Usage()
 			return
 		}
@@ -1272,19 +1196,19 @@ func main() {
 		}
 		argvalue0 := flag.Arg(1)
 		value0 := heavy.TSessionId(argvalue0)
-		arg878 := flag.Arg(2)
-		mbTrans879 := thrift.NewTMemoryBufferLen(len(arg878))
-		defer mbTrans879.Close()
-		_, err880 := mbTrans879.WriteString(arg878)
-		if err880 != nil {
+		arg741 := flag.Arg(2)
+		mbTrans742 := thrift.NewTMemoryBufferLen(len(arg741))
+		defer mbTrans742.Close()
+		_, err743 := mbTrans742.WriteString(arg741)
+		if err743 != nil {
 			Usage()
 			return
 		}
-		factory881 := thrift.NewTJSONProtocolFactory()
-		jsProt882 := factory881.GetProtocol(mbTrans879)
+		factory744 := thrift.NewTJSONProtocolFactory()
+		jsProt745 := factory744.GetProtocol(mbTrans742)
 		containerStruct1 := heavy.NewHeavyDeleteDashboardsArgs()
-		err883 := containerStruct1.ReadField2(context.Background(), jsProt882)
-		if err883 != nil {
+		err746 := containerStruct1.ReadField2(context.Background(), jsProt745)
+		if err746 != nil {
 			Usage()
 			return
 		}
@@ -1300,62 +1224,62 @@ func main() {
 		}
 		argvalue0 := flag.Arg(1)
 		value0 := heavy.TSessionId(argvalue0)
-		tmp1, err885 := (strconv.Atoi(flag.Arg(2)))
-		if err885 != nil {
+		tmp1, err748 := (strconv.Atoi(flag.Arg(2)))
+		if err748 != nil {
 			Usage()
 			return
 		}
 		argvalue1 := int32(tmp1)
 		value1 := argvalue1
-		arg886 := flag.Arg(3)
-		mbTrans887 := thrift.NewTMemoryBufferLen(len(arg886))
-		defer mbTrans887.Close()
-		_, err888 := mbTrans887.WriteString(arg886)
-		if err888 != nil {
+		arg749 := flag.Arg(3)
+		mbTrans750 := thrift.NewTMemoryBufferLen(len(arg749))
+		defer mbTrans750.Close()
+		_, err751 := mbTrans750.WriteString(arg749)
+		if err751 != nil {
 			Usage()
 			return
 		}
-		factory889 := thrift.NewTJSONProtocolFactory()
-		jsProt890 := factory889.GetProtocol(mbTrans887)
+		factory752 := thrift.NewTJSONProtocolFactory()
+		jsProt753 := factory752.GetProtocol(mbTrans750)
 		containerStruct2 := heavy.NewHeavyShareDashboardArgs()
-		err891 := containerStruct2.ReadField3(context.Background(), jsProt890)
-		if err891 != nil {
+		err754 := containerStruct2.ReadField3(context.Background(), jsProt753)
+		if err754 != nil {
 			Usage()
 			return
 		}
 		argvalue2 := containerStruct2.Groups
 		value2 := argvalue2
-		arg892 := flag.Arg(4)
-		mbTrans893 := thrift.NewTMemoryBufferLen(len(arg892))
-		defer mbTrans893.Close()
-		_, err894 := mbTrans893.WriteString(arg892)
-		if err894 != nil {
+		arg755 := flag.Arg(4)
+		mbTrans756 := thrift.NewTMemoryBufferLen(len(arg755))
+		defer mbTrans756.Close()
+		_, err757 := mbTrans756.WriteString(arg755)
+		if err757 != nil {
 			Usage()
 			return
 		}
-		factory895 := thrift.NewTJSONProtocolFactory()
-		jsProt896 := factory895.GetProtocol(mbTrans893)
+		factory758 := thrift.NewTJSONProtocolFactory()
+		jsProt759 := factory758.GetProtocol(mbTrans756)
 		containerStruct3 := heavy.NewHeavyShareDashboardArgs()
-		err897 := containerStruct3.ReadField4(context.Background(), jsProt896)
-		if err897 != nil {
+		err760 := containerStruct3.ReadField4(context.Background(), jsProt759)
+		if err760 != nil {
 			Usage()
 			return
 		}
 		argvalue3 := containerStruct3.Objects
 		value3 := argvalue3
-		arg898 := flag.Arg(5)
-		mbTrans899 := thrift.NewTMemoryBufferLen(len(arg898))
-		defer mbTrans899.Close()
-		_, err900 := mbTrans899.WriteString(arg898)
-		if err900 != nil {
+		arg761 := flag.Arg(5)
+		mbTrans762 := thrift.NewTMemoryBufferLen(len(arg761))
+		defer mbTrans762.Close()
+		_, err763 := mbTrans762.WriteString(arg761)
+		if err763 != nil {
 			Usage()
 			return
 		}
-		factory901 := thrift.NewTJSONProtocolFactory()
-		jsProt902 := factory901.GetProtocol(mbTrans899)
+		factory764 := thrift.NewTJSONProtocolFactory()
+		jsProt765 := factory764.GetProtocol(mbTrans762)
 		argvalue4 := heavy.NewTDashboardPermissions()
-		err903 := argvalue4.Read(context.Background(), jsProt902)
-		if err903 != nil {
+		err766 := argvalue4.Read(context.Background(), jsProt765)
+		if err766 != nil {
 			Usage()
 			return
 		}
@@ -1372,62 +1296,62 @@ func main() {
 		}
 		argvalue0 := flag.Arg(1)
 		value0 := heavy.TSessionId(argvalue0)
-		tmp1, err906 := (strconv.Atoi(flag.Arg(2)))
-		if err906 != nil {
+		tmp1, err769 := (strconv.Atoi(flag.Arg(2)))
+		if err769 != nil {
 			Usage()
 			return
 		}
 		argvalue1 := int32(tmp1)
 		value1 := argvalue1
-		arg907 := flag.Arg(3)
-		mbTrans908 := thrift.NewTMemoryBufferLen(len(arg907))
-		defer mbTrans908.Close()
-		_, err909 := mbTrans908.WriteString(arg907)
-		if err909 != nil {
+		arg770 := flag.Arg(3)
+		mbTrans771 := thrift.NewTMemoryBufferLen(len(arg770))
+		defer mbTrans771.Close()
+		_, err772 := mbTrans771.WriteString(arg770)
+		if err772 != nil {
 			Usage()
 			return
 		}
-		factory910 := thrift.NewTJSONProtocolFactory()
-		jsProt911 := factory910.GetProtocol(mbTrans908)
+		factory773 := thrift.NewTJSONProtocolFactory()
+		jsProt774 := factory773.GetProtocol(mbTrans771)
 		containerStruct2 := heavy.NewHeavyUnshareDashboardArgs()
-		err912 := containerStruct2.ReadField3(context.Background(), jsProt911)
-		if err912 != nil {
+		err775 := containerStruct2.ReadField3(context.Background(), jsProt774)
+		if err775 != nil {
 			Usage()
 			return
 		}
 		argvalue2 := containerStruct2.Groups
 		value2 := argvalue2
-		arg913 := flag.Arg(4)
-		mbTrans914 := thrift.NewTMemoryBufferLen(len(arg913))
-		defer mbTrans914.Close()
-		_, err915 := mbTrans914.WriteString(arg913)
-		if err915 != nil {
+		arg776 := flag.Arg(4)
+		mbTrans777 := thrift.NewTMemoryBufferLen(len(arg776))
+		defer mbTrans777.Close()
+		_, err778 := mbTrans777.WriteString(arg776)
+		if err778 != nil {
 			Usage()
 			return
 		}
-		factory916 := thrift.NewTJSONProtocolFactory()
-		jsProt917 := factory916.GetProtocol(mbTrans914)
+		factory779 := thrift.NewTJSONProtocolFactory()
+		jsProt780 := factory779.GetProtocol(mbTrans777)
 		containerStruct3 := heavy.NewHeavyUnshareDashboardArgs()
-		err918 := containerStruct3.ReadField4(context.Background(), jsProt917)
-		if err918 != nil {
+		err781 := containerStruct3.ReadField4(context.Background(), jsProt780)
+		if err781 != nil {
 			Usage()
 			return
 		}
 		argvalue3 := containerStruct3.Objects
 		value3 := argvalue3
-		arg919 := flag.Arg(5)
-		mbTrans920 := thrift.NewTMemoryBufferLen(len(arg919))
-		defer mbTrans920.Close()
-		_, err921 := mbTrans920.WriteString(arg919)
-		if err921 != nil {
+		arg782 := flag.Arg(5)
+		mbTrans783 := thrift.NewTMemoryBufferLen(len(arg782))
+		defer mbTrans783.Close()
+		_, err784 := mbTrans783.WriteString(arg782)
+		if err784 != nil {
 			Usage()
 			return
 		}
-		factory922 := thrift.NewTJSONProtocolFactory()
-		jsProt923 := factory922.GetProtocol(mbTrans920)
+		factory785 := thrift.NewTJSONProtocolFactory()
+		jsProt786 := factory785.GetProtocol(mbTrans783)
 		argvalue4 := heavy.NewTDashboardPermissions()
-		err924 := argvalue4.Read(context.Background(), jsProt923)
-		if err924 != nil {
+		err787 := argvalue4.Read(context.Background(), jsProt786)
+		if err787 != nil {
 			Usage()
 			return
 		}
@@ -1442,55 +1366,55 @@ func main() {
 		}
 		argvalue0 := flag.Arg(1)
 		value0 := heavy.TSessionId(argvalue0)
-		arg926 := flag.Arg(2)
-		mbTrans927 := thrift.NewTMemoryBufferLen(len(arg926))
-		defer mbTrans927.Close()
-		_, err928 := mbTrans927.WriteString(arg926)
-		if err928 != nil {
+		arg789 := flag.Arg(2)
+		mbTrans790 := thrift.NewTMemoryBufferLen(len(arg789))
+		defer mbTrans790.Close()
+		_, err791 := mbTrans790.WriteString(arg789)
+		if err791 != nil {
 			Usage()
 			return
 		}
-		factory929 := thrift.NewTJSONProtocolFactory()
-		jsProt930 := factory929.GetProtocol(mbTrans927)
+		factory792 := thrift.NewTJSONProtocolFactory()
+		jsProt793 := factory792.GetProtocol(mbTrans790)
 		containerStruct1 := heavy.NewHeavyUnshareDashboardsArgs()
-		err931 := containerStruct1.ReadField2(context.Background(), jsProt930)
-		if err931 != nil {
+		err794 := containerStruct1.ReadField2(context.Background(), jsProt793)
+		if err794 != nil {
 			Usage()
 			return
 		}
 		argvalue1 := containerStruct1.DashboardIds
 		value1 := argvalue1
-		arg932 := flag.Arg(3)
-		mbTrans933 := thrift.NewTMemoryBufferLen(len(arg932))
-		defer mbTrans933.Close()
-		_, err934 := mbTrans933.WriteString(arg932)
-		if err934 != nil {
+		arg795 := flag.Arg(3)
+		mbTrans796 := thrift.NewTMemoryBufferLen(len(arg795))
+		defer mbTrans796.Close()
+		_, err797 := mbTrans796.WriteString(arg795)
+		if err797 != nil {
 			Usage()
 			return
 		}
-		factory935 := thrift.NewTJSONProtocolFactory()
-		jsProt936 := factory935.GetProtocol(mbTrans933)
+		factory798 := thrift.NewTJSONProtocolFactory()
+		jsProt799 := factory798.GetProtocol(mbTrans796)
 		containerStruct2 := heavy.NewHeavyUnshareDashboardsArgs()
-		err937 := containerStruct2.ReadField3(context.Background(), jsProt936)
-		if err937 != nil {
+		err800 := containerStruct2.ReadField3(context.Background(), jsProt799)
+		if err800 != nil {
 			Usage()
 			return
 		}
 		argvalue2 := containerStruct2.Groups
 		value2 := argvalue2
-		arg938 := flag.Arg(4)
-		mbTrans939 := thrift.NewTMemoryBufferLen(len(arg938))
-		defer mbTrans939.Close()
-		_, err940 := mbTrans939.WriteString(arg938)
-		if err940 != nil {
+		arg801 := flag.Arg(4)
+		mbTrans802 := thrift.NewTMemoryBufferLen(len(arg801))
+		defer mbTrans802.Close()
+		_, err803 := mbTrans802.WriteString(arg801)
+		if err803 != nil {
 			Usage()
 			return
 		}
-		factory941 := thrift.NewTJSONProtocolFactory()
-		jsProt942 := factory941.GetProtocol(mbTrans939)
+		factory804 := thrift.NewTJSONProtocolFactory()
+		jsProt805 := factory804.GetProtocol(mbTrans802)
 		argvalue3 := heavy.NewTDashboardPermissions()
-		err943 := argvalue3.Read(context.Background(), jsProt942)
-		if err943 != nil {
+		err806 := argvalue3.Read(context.Background(), jsProt805)
+		if err806 != nil {
 			Usage()
 			return
 		}
@@ -1505,8 +1429,8 @@ func main() {
 		}
 		argvalue0 := flag.Arg(1)
 		value0 := heavy.TSessionId(argvalue0)
-		tmp1, err945 := (strconv.Atoi(flag.Arg(2)))
-		if err945 != nil {
+		tmp1, err808 := (strconv.Atoi(flag.Arg(2)))
+		if err808 != nil {
 			Usage()
 			return
 		}
@@ -1550,37 +1474,37 @@ func main() {
 		value0 := heavy.TSessionId(argvalue0)
 		argvalue1 := flag.Arg(2)
 		value1 := argvalue1
-		arg953 := flag.Arg(3)
-		mbTrans954 := thrift.NewTMemoryBufferLen(len(arg953))
-		defer mbTrans954.Close()
-		_, err955 := mbTrans954.WriteString(arg953)
-		if err955 != nil {
+		arg816 := flag.Arg(3)
+		mbTrans817 := thrift.NewTMemoryBufferLen(len(arg816))
+		defer mbTrans817.Close()
+		_, err818 := mbTrans817.WriteString(arg816)
+		if err818 != nil {
 			Usage()
 			return
 		}
-		factory956 := thrift.NewTJSONProtocolFactory()
-		jsProt957 := factory956.GetProtocol(mbTrans954)
+		factory819 := thrift.NewTJSONProtocolFactory()
+		jsProt820 := factory819.GetProtocol(mbTrans817)
 		containerStruct2 := heavy.NewHeavyLoadTableBinaryArgs()
-		err958 := containerStruct2.ReadField3(context.Background(), jsProt957)
-		if err958 != nil {
+		err821 := containerStruct2.ReadField3(context.Background(), jsProt820)
+		if err821 != nil {
 			Usage()
 			return
 		}
 		argvalue2 := containerStruct2.Rows
 		value2 := argvalue2
-		arg959 := flag.Arg(4)
-		mbTrans960 := thrift.NewTMemoryBufferLen(len(arg959))
-		defer mbTrans960.Close()
-		_, err961 := mbTrans960.WriteString(arg959)
-		if err961 != nil {
+		arg822 := flag.Arg(4)
+		mbTrans823 := thrift.NewTMemoryBufferLen(len(arg822))
+		defer mbTrans823.Close()
+		_, err824 := mbTrans823.WriteString(arg822)
+		if err824 != nil {
 			Usage()
 			return
 		}
-		factory962 := thrift.NewTJSONProtocolFactory()
-		jsProt963 := factory962.GetProtocol(mbTrans960)
+		factory825 := thrift.NewTJSONProtocolFactory()
+		jsProt826 := factory825.GetProtocol(mbTrans823)
 		containerStruct3 := heavy.NewHeavyLoadTableBinaryArgs()
-		err964 := containerStruct3.ReadField4(context.Background(), jsProt963)
-		if err964 != nil {
+		err827 := containerStruct3.ReadField4(context.Background(), jsProt826)
+		if err827 != nil {
 			Usage()
 			return
 		}
@@ -1598,37 +1522,37 @@ func main() {
 		value0 := heavy.TSessionId(argvalue0)
 		argvalue1 := flag.Arg(2)
 		value1 := argvalue1
-		arg967 := flag.Arg(3)
-		mbTrans968 := thrift.NewTMemoryBufferLen(len(arg967))
-		defer mbTrans968.Close()
-		_, err969 := mbTrans968.WriteString(arg967)
-		if err969 != nil {
+		arg830 := flag.Arg(3)
+		mbTrans831 := thrift.NewTMemoryBufferLen(len(arg830))
+		defer mbTrans831.Close()
+		_, err832 := mbTrans831.WriteString(arg830)
+		if err832 != nil {
 			Usage()
 			return
 		}
-		factory970 := thrift.NewTJSONProtocolFactory()
-		jsProt971 := factory970.GetProtocol(mbTrans968)
+		factory833 := thrift.NewTJSONProtocolFactory()
+		jsProt834 := factory833.GetProtocol(mbTrans831)
 		containerStruct2 := heavy.NewHeavyLoadTableBinaryColumnarArgs()
-		err972 := containerStruct2.ReadField3(context.Background(), jsProt971)
-		if err972 != nil {
+		err835 := containerStruct2.ReadField3(context.Background(), jsProt834)
+		if err835 != nil {
 			Usage()
 			return
 		}
 		argvalue2 := containerStruct2.Cols
 		value2 := argvalue2
-		arg973 := flag.Arg(4)
-		mbTrans974 := thrift.NewTMemoryBufferLen(len(arg973))
-		defer mbTrans974.Close()
-		_, err975 := mbTrans974.WriteString(arg973)
-		if err975 != nil {
+		arg836 := flag.Arg(4)
+		mbTrans837 := thrift.NewTMemoryBufferLen(len(arg836))
+		defer mbTrans837.Close()
+		_, err838 := mbTrans837.WriteString(arg836)
+		if err838 != nil {
 			Usage()
 			return
 		}
-		factory976 := thrift.NewTJSONProtocolFactory()
-		jsProt977 := factory976.GetProtocol(mbTrans974)
+		factory839 := thrift.NewTJSONProtocolFactory()
+		jsProt840 := factory839.GetProtocol(mbTrans837)
 		containerStruct3 := heavy.NewHeavyLoadTableBinaryColumnarArgs()
-		err978 := containerStruct3.ReadField4(context.Background(), jsProt977)
-		if err978 != nil {
+		err841 := containerStruct3.ReadField4(context.Background(), jsProt840)
+		if err841 != nil {
 			Usage()
 			return
 		}
@@ -1662,37 +1586,37 @@ func main() {
 		value0 := heavy.TSessionId(argvalue0)
 		argvalue1 := flag.Arg(2)
 		value1 := argvalue1
-		arg985 := flag.Arg(3)
-		mbTrans986 := thrift.NewTMemoryBufferLen(len(arg985))
-		defer mbTrans986.Close()
-		_, err987 := mbTrans986.WriteString(arg985)
-		if err987 != nil {
+		arg848 := flag.Arg(3)
+		mbTrans849 := thrift.NewTMemoryBufferLen(len(arg848))
+		defer mbTrans849.Close()
+		_, err850 := mbTrans849.WriteString(arg848)
+		if err850 != nil {
 			Usage()
 			return
 		}
-		factory988 := thrift.NewTJSONProtocolFactory()
-		jsProt989 := factory988.GetProtocol(mbTrans986)
+		factory851 := thrift.NewTJSONProtocolFactory()
+		jsProt852 := factory851.GetProtocol(mbTrans849)
 		containerStruct2 := heavy.NewHeavyLoadTableArgs()
-		err990 := containerStruct2.ReadField3(context.Background(), jsProt989)
-		if err990 != nil {
+		err853 := containerStruct2.ReadField3(context.Background(), jsProt852)
+		if err853 != nil {
 			Usage()
 			return
 		}
 		argvalue2 := containerStruct2.Rows
 		value2 := argvalue2
-		arg991 := flag.Arg(4)
-		mbTrans992 := thrift.NewTMemoryBufferLen(len(arg991))
-		defer mbTrans992.Close()
-		_, err993 := mbTrans992.WriteString(arg991)
-		if err993 != nil {
+		arg854 := flag.Arg(4)
+		mbTrans855 := thrift.NewTMemoryBufferLen(len(arg854))
+		defer mbTrans855.Close()
+		_, err856 := mbTrans855.WriteString(arg854)
+		if err856 != nil {
 			Usage()
 			return
 		}
-		factory994 := thrift.NewTJSONProtocolFactory()
-		jsProt995 := factory994.GetProtocol(mbTrans992)
+		factory857 := thrift.NewTJSONProtocolFactory()
+		jsProt858 := factory857.GetProtocol(mbTrans855)
 		containerStruct3 := heavy.NewHeavyLoadTableArgs()
-		err996 := containerStruct3.ReadField4(context.Background(), jsProt995)
-		if err996 != nil {
+		err859 := containerStruct3.ReadField4(context.Background(), jsProt858)
+		if err859 != nil {
 			Usage()
 			return
 		}
@@ -1710,19 +1634,19 @@ func main() {
 		value0 := heavy.TSessionId(argvalue0)
 		argvalue1 := flag.Arg(2)
 		value1 := argvalue1
-		arg999 := flag.Arg(3)
-		mbTrans1000 := thrift.NewTMemoryBufferLen(len(arg999))
-		defer mbTrans1000.Close()
-		_, err1001 := mbTrans1000.WriteString(arg999)
-		if err1001 != nil {
+		arg862 := flag.Arg(3)
+		mbTrans863 := thrift.NewTMemoryBufferLen(len(arg862))
+		defer mbTrans863.Close()
+		_, err864 := mbTrans863.WriteString(arg862)
+		if err864 != nil {
 			Usage()
 			return
 		}
-		factory1002 := thrift.NewTJSONProtocolFactory()
-		jsProt1003 := factory1002.GetProtocol(mbTrans1000)
+		factory865 := thrift.NewTJSONProtocolFactory()
+		jsProt866 := factory865.GetProtocol(mbTrans863)
 		argvalue2 := heavy.NewTCopyParams()
-		err1004 := argvalue2.Read(context.Background(), jsProt1003)
-		if err1004 != nil {
+		err867 := argvalue2.Read(context.Background(), jsProt866)
+		if err867 != nil {
 			Usage()
 			return
 		}
@@ -1731,50 +1655,33 @@ func main() {
 		fmt.Print("\n")
 		break
 	case "create_table":
-		if flag.NArg() - 1 != 4 {
-			fmt.Fprintln(os.Stderr, "CreateTable requires 4 args")
+		if flag.NArg() - 1 != 3 {
+			fmt.Fprintln(os.Stderr, "CreateTable requires 3 args")
 			flag.Usage()
 		}
 		argvalue0 := flag.Arg(1)
 		value0 := heavy.TSessionId(argvalue0)
 		argvalue1 := flag.Arg(2)
 		value1 := argvalue1
-		arg1007 := flag.Arg(3)
-		mbTrans1008 := thrift.NewTMemoryBufferLen(len(arg1007))
-		defer mbTrans1008.Close()
-		_, err1009 := mbTrans1008.WriteString(arg1007)
-		if err1009 != nil {
+		arg870 := flag.Arg(3)
+		mbTrans871 := thrift.NewTMemoryBufferLen(len(arg870))
+		defer mbTrans871.Close()
+		_, err872 := mbTrans871.WriteString(arg870)
+		if err872 != nil {
 			Usage()
 			return
 		}
-		factory1010 := thrift.NewTJSONProtocolFactory()
-		jsProt1011 := factory1010.GetProtocol(mbTrans1008)
+		factory873 := thrift.NewTJSONProtocolFactory()
+		jsProt874 := factory873.GetProtocol(mbTrans871)
 		containerStruct2 := heavy.NewHeavyCreateTableArgs()
-		err1012 := containerStruct2.ReadField3(context.Background(), jsProt1011)
-		if err1012 != nil {
+		err875 := containerStruct2.ReadField3(context.Background(), jsProt874)
+		if err875 != nil {
 			Usage()
 			return
 		}
 		argvalue2 := containerStruct2.RowDesc
 		value2 := heavy.TRowDescriptor(argvalue2)
-		arg1013 := flag.Arg(4)
-		mbTrans1014 := thrift.NewTMemoryBufferLen(len(arg1013))
-		defer mbTrans1014.Close()
-		_, err1015 := mbTrans1014.WriteString(arg1013)
-		if err1015 != nil {
-			Usage()
-			return
-		}
-		factory1016 := thrift.NewTJSONProtocolFactory()
-		jsProt1017 := factory1016.GetProtocol(mbTrans1014)
-		argvalue3 := heavy.NewTCreateParams()
-		err1018 := argvalue3.Read(context.Background(), jsProt1017)
-		if err1018 != nil {
-			Usage()
-			return
-		}
-		value3 := argvalue3
-		fmt.Print(client.CreateTable(context.Background(), value0, value1, value2, value3))
+		fmt.Print(client.CreateTable(context.Background(), value0, value1, value2))
 		fmt.Print("\n")
 		break
 	case "import_table":
@@ -1788,19 +1695,19 @@ func main() {
 		value1 := argvalue1
 		argvalue2 := flag.Arg(3)
 		value2 := argvalue2
-		arg1022 := flag.Arg(4)
-		mbTrans1023 := thrift.NewTMemoryBufferLen(len(arg1022))
-		defer mbTrans1023.Close()
-		_, err1024 := mbTrans1023.WriteString(arg1022)
-		if err1024 != nil {
+		arg879 := flag.Arg(4)
+		mbTrans880 := thrift.NewTMemoryBufferLen(len(arg879))
+		defer mbTrans880.Close()
+		_, err881 := mbTrans880.WriteString(arg879)
+		if err881 != nil {
 			Usage()
 			return
 		}
-		factory1025 := thrift.NewTJSONProtocolFactory()
-		jsProt1026 := factory1025.GetProtocol(mbTrans1023)
+		factory882 := thrift.NewTJSONProtocolFactory()
+		jsProt883 := factory882.GetProtocol(mbTrans880)
 		argvalue3 := heavy.NewTCopyParams()
-		err1027 := argvalue3.Read(context.Background(), jsProt1026)
-		if err1027 != nil {
+		err884 := argvalue3.Read(context.Background(), jsProt883)
+		if err884 != nil {
 			Usage()
 			return
 		}
@@ -1809,8 +1716,8 @@ func main() {
 		fmt.Print("\n")
 		break
 	case "import_geo_table":
-		if flag.NArg() - 1 != 6 {
-			fmt.Fprintln(os.Stderr, "ImportGeoTable requires 6 args")
+		if flag.NArg() - 1 != 5 {
+			fmt.Fprintln(os.Stderr, "ImportGeoTable requires 5 args")
 			flag.Usage()
 		}
 		argvalue0 := flag.Arg(1)
@@ -1819,59 +1726,42 @@ func main() {
 		value1 := argvalue1
 		argvalue2 := flag.Arg(3)
 		value2 := argvalue2
-		arg1031 := flag.Arg(4)
-		mbTrans1032 := thrift.NewTMemoryBufferLen(len(arg1031))
-		defer mbTrans1032.Close()
-		_, err1033 := mbTrans1032.WriteString(arg1031)
-		if err1033 != nil {
+		arg888 := flag.Arg(4)
+		mbTrans889 := thrift.NewTMemoryBufferLen(len(arg888))
+		defer mbTrans889.Close()
+		_, err890 := mbTrans889.WriteString(arg888)
+		if err890 != nil {
 			Usage()
 			return
 		}
-		factory1034 := thrift.NewTJSONProtocolFactory()
-		jsProt1035 := factory1034.GetProtocol(mbTrans1032)
+		factory891 := thrift.NewTJSONProtocolFactory()
+		jsProt892 := factory891.GetProtocol(mbTrans889)
 		argvalue3 := heavy.NewTCopyParams()
-		err1036 := argvalue3.Read(context.Background(), jsProt1035)
-		if err1036 != nil {
+		err893 := argvalue3.Read(context.Background(), jsProt892)
+		if err893 != nil {
 			Usage()
 			return
 		}
 		value3 := argvalue3
-		arg1037 := flag.Arg(5)
-		mbTrans1038 := thrift.NewTMemoryBufferLen(len(arg1037))
-		defer mbTrans1038.Close()
-		_, err1039 := mbTrans1038.WriteString(arg1037)
-		if err1039 != nil {
+		arg894 := flag.Arg(5)
+		mbTrans895 := thrift.NewTMemoryBufferLen(len(arg894))
+		defer mbTrans895.Close()
+		_, err896 := mbTrans895.WriteString(arg894)
+		if err896 != nil {
 			Usage()
 			return
 		}
-		factory1040 := thrift.NewTJSONProtocolFactory()
-		jsProt1041 := factory1040.GetProtocol(mbTrans1038)
+		factory897 := thrift.NewTJSONProtocolFactory()
+		jsProt898 := factory897.GetProtocol(mbTrans895)
 		containerStruct4 := heavy.NewHeavyImportGeoTableArgs()
-		err1042 := containerStruct4.ReadField5(context.Background(), jsProt1041)
-		if err1042 != nil {
+		err899 := containerStruct4.ReadField5(context.Background(), jsProt898)
+		if err899 != nil {
 			Usage()
 			return
 		}
 		argvalue4 := containerStruct4.RowDesc
 		value4 := heavy.TRowDescriptor(argvalue4)
-		arg1043 := flag.Arg(6)
-		mbTrans1044 := thrift.NewTMemoryBufferLen(len(arg1043))
-		defer mbTrans1044.Close()
-		_, err1045 := mbTrans1044.WriteString(arg1043)
-		if err1045 != nil {
-			Usage()
-			return
-		}
-		factory1046 := thrift.NewTJSONProtocolFactory()
-		jsProt1047 := factory1046.GetProtocol(mbTrans1044)
-		argvalue5 := heavy.NewTCreateParams()
-		err1048 := argvalue5.Read(context.Background(), jsProt1047)
-		if err1048 != nil {
-			Usage()
-			return
-		}
-		value5 := argvalue5
-		fmt.Print(client.ImportGeoTable(context.Background(), value0, value1, value2, value3, value4, value5))
+		fmt.Print(client.ImportGeoTable(context.Background(), value0, value1, value2, value3, value4))
 		fmt.Print("\n")
 		break
 	case "import_table_status":
@@ -1895,19 +1785,19 @@ func main() {
 		value0 := heavy.TSessionId(argvalue0)
 		argvalue1 := flag.Arg(2)
 		value1 := argvalue1
-		arg1053 := flag.Arg(3)
-		mbTrans1054 := thrift.NewTMemoryBufferLen(len(arg1053))
-		defer mbTrans1054.Close()
-		_, err1055 := mbTrans1054.WriteString(arg1053)
-		if err1055 != nil {
+		arg904 := flag.Arg(3)
+		mbTrans905 := thrift.NewTMemoryBufferLen(len(arg904))
+		defer mbTrans905.Close()
+		_, err906 := mbTrans905.WriteString(arg904)
+		if err906 != nil {
 			Usage()
 			return
 		}
-		factory1056 := thrift.NewTJSONProtocolFactory()
-		jsProt1057 := factory1056.GetProtocol(mbTrans1054)
+		factory907 := thrift.NewTJSONProtocolFactory()
+		jsProt908 := factory907.GetProtocol(mbTrans905)
 		argvalue2 := heavy.NewTCopyParams()
-		err1058 := argvalue2.Read(context.Background(), jsProt1057)
-		if err1058 != nil {
+		err909 := argvalue2.Read(context.Background(), jsProt908)
+		if err909 != nil {
 			Usage()
 			return
 		}
@@ -1924,19 +1814,19 @@ func main() {
 		value0 := heavy.TSessionId(argvalue0)
 		argvalue1 := flag.Arg(2)
 		value1 := argvalue1
-		arg1061 := flag.Arg(3)
-		mbTrans1062 := thrift.NewTMemoryBufferLen(len(arg1061))
-		defer mbTrans1062.Close()
-		_, err1063 := mbTrans1062.WriteString(arg1061)
-		if err1063 != nil {
+		arg912 := flag.Arg(3)
+		mbTrans913 := thrift.NewTMemoryBufferLen(len(arg912))
+		defer mbTrans913.Close()
+		_, err914 := mbTrans913.WriteString(arg912)
+		if err914 != nil {
 			Usage()
 			return
 		}
-		factory1064 := thrift.NewTJSONProtocolFactory()
-		jsProt1065 := factory1064.GetProtocol(mbTrans1062)
+		factory915 := thrift.NewTJSONProtocolFactory()
+		jsProt916 := factory915.GetProtocol(mbTrans913)
 		argvalue2 := heavy.NewTCopyParams()
-		err1066 := argvalue2.Read(context.Background(), jsProt1065)
-		if err1066 != nil {
+		err917 := argvalue2.Read(context.Background(), jsProt916)
+		if err917 != nil {
 			Usage()
 			return
 		}
@@ -1953,318 +1843,24 @@ func main() {
 		value0 := heavy.TSessionId(argvalue0)
 		argvalue1 := flag.Arg(2)
 		value1 := argvalue1
-		arg1069 := flag.Arg(3)
-		mbTrans1070 := thrift.NewTMemoryBufferLen(len(arg1069))
-		defer mbTrans1070.Close()
-		_, err1071 := mbTrans1070.WriteString(arg1069)
-		if err1071 != nil {
+		arg920 := flag.Arg(3)
+		mbTrans921 := thrift.NewTMemoryBufferLen(len(arg920))
+		defer mbTrans921.Close()
+		_, err922 := mbTrans921.WriteString(arg920)
+		if err922 != nil {
 			Usage()
 			return
 		}
-		factory1072 := thrift.NewTJSONProtocolFactory()
-		jsProt1073 := factory1072.GetProtocol(mbTrans1070)
+		factory923 := thrift.NewTJSONProtocolFactory()
+		jsProt924 := factory923.GetProtocol(mbTrans921)
 		argvalue2 := heavy.NewTCopyParams()
-		err1074 := argvalue2.Read(context.Background(), jsProt1073)
-		if err1074 != nil {
+		err925 := argvalue2.Read(context.Background(), jsProt924)
+		if err925 != nil {
 			Usage()
 			return
 		}
 		value2 := argvalue2
 		fmt.Print(client.GetLayersInGeoFile(context.Background(), value0, value1, value2))
-		fmt.Print("\n")
-		break
-	case "query_get_outer_fragment_count":
-		if flag.NArg() - 1 != 2 {
-			fmt.Fprintln(os.Stderr, "QueryGetOuterFragmentCount requires 2 args")
-			flag.Usage()
-		}
-		argvalue0 := flag.Arg(1)
-		value0 := heavy.TSessionId(argvalue0)
-		argvalue1 := flag.Arg(2)
-		value1 := argvalue1
-		fmt.Print(client.QueryGetOuterFragmentCount(context.Background(), value0, value1))
-		fmt.Print("\n")
-		break
-	case "check_table_consistency":
-		if flag.NArg() - 1 != 2 {
-			fmt.Fprintln(os.Stderr, "CheckTableConsistency requires 2 args")
-			flag.Usage()
-		}
-		argvalue0 := flag.Arg(1)
-		value0 := heavy.TSessionId(argvalue0)
-		tmp1, err1078 := (strconv.Atoi(flag.Arg(2)))
-		if err1078 != nil {
-			Usage()
-			return
-		}
-		argvalue1 := int32(tmp1)
-		value1 := argvalue1
-		fmt.Print(client.CheckTableConsistency(context.Background(), value0, value1))
-		fmt.Print("\n")
-		break
-	case "start_query":
-		if flag.NArg() - 1 != 6 {
-			fmt.Fprintln(os.Stderr, "StartQuery requires 6 args")
-			flag.Usage()
-		}
-		argvalue0 := flag.Arg(1)
-		value0 := heavy.TSessionId(argvalue0)
-		argvalue1 := flag.Arg(2)
-		value1 := heavy.TSessionId(argvalue1)
-		argvalue2 := flag.Arg(3)
-		value2 := argvalue2
-		argvalue3 := flag.Arg(4)
-		value3 := argvalue3
-		argvalue4 := flag.Arg(5) == "true"
-		value4 := argvalue4
-		arg1084 := flag.Arg(6)
-		mbTrans1085 := thrift.NewTMemoryBufferLen(len(arg1084))
-		defer mbTrans1085.Close()
-		_, err1086 := mbTrans1085.WriteString(arg1084)
-		if err1086 != nil {
-			Usage()
-			return
-		}
-		factory1087 := thrift.NewTJSONProtocolFactory()
-		jsProt1088 := factory1087.GetProtocol(mbTrans1085)
-		containerStruct5 := heavy.NewHeavyStartQueryArgs()
-		err1089 := containerStruct5.ReadField6(context.Background(), jsProt1088)
-		if err1089 != nil {
-			Usage()
-			return
-		}
-		argvalue5 := containerStruct5.OuterFragmentIndices
-		value5 := argvalue5
-		fmt.Print(client.StartQuery(context.Background(), value0, value1, value2, value3, value4, value5))
-		fmt.Print("\n")
-		break
-	case "execute_query_step":
-		if flag.NArg() - 1 != 3 {
-			fmt.Fprintln(os.Stderr, "ExecuteQueryStep requires 3 args")
-			flag.Usage()
-		}
-		arg1090 := flag.Arg(1)
-		mbTrans1091 := thrift.NewTMemoryBufferLen(len(arg1090))
-		defer mbTrans1091.Close()
-		_, err1092 := mbTrans1091.WriteString(arg1090)
-		if err1092 != nil {
-			Usage()
-			return
-		}
-		factory1093 := thrift.NewTJSONProtocolFactory()
-		jsProt1094 := factory1093.GetProtocol(mbTrans1091)
-		argvalue0 := heavy.NewTPendingQuery()
-		err1095 := argvalue0.Read(context.Background(), jsProt1094)
-		if err1095 != nil {
-			Usage()
-			return
-		}
-		value0 := argvalue0
-		argvalue1, err1096 := (strconv.ParseInt(flag.Arg(2), 10, 64))
-		if err1096 != nil {
-			Usage()
-			return
-		}
-		value1 := heavy.TSubqueryId(argvalue1)
-		argvalue2 := flag.Arg(3)
-		value2 := argvalue2
-		fmt.Print(client.ExecuteQueryStep(context.Background(), value0, value1, value2))
-		fmt.Print("\n")
-		break
-	case "broadcast_serialized_rows":
-		if flag.NArg() - 1 != 5 {
-			fmt.Fprintln(os.Stderr, "BroadcastSerializedRows requires 5 args")
-			flag.Usage()
-		}
-		arg1098 := flag.Arg(1)
-		mbTrans1099 := thrift.NewTMemoryBufferLen(len(arg1098))
-		defer mbTrans1099.Close()
-		_, err1100 := mbTrans1099.WriteString(arg1098)
-		if err1100 != nil {
-			Usage()
-			return
-		}
-		factory1101 := thrift.NewTJSONProtocolFactory()
-		jsProt1102 := factory1101.GetProtocol(mbTrans1099)
-		argvalue0 := serialized_result_set.NewTSerializedRows()
-		err1103 := argvalue0.Read(context.Background(), jsProt1102)
-		if err1103 != nil {
-			Usage()
-			return
-		}
-		value0 := argvalue0
-		arg1104 := flag.Arg(2)
-		mbTrans1105 := thrift.NewTMemoryBufferLen(len(arg1104))
-		defer mbTrans1105.Close()
-		_, err1106 := mbTrans1105.WriteString(arg1104)
-		if err1106 != nil {
-			Usage()
-			return
-		}
-		factory1107 := thrift.NewTJSONProtocolFactory()
-		jsProt1108 := factory1107.GetProtocol(mbTrans1105)
-		containerStruct1 := heavy.NewHeavyBroadcastSerializedRowsArgs()
-		err1109 := containerStruct1.ReadField2(context.Background(), jsProt1108)
-		if err1109 != nil {
-			Usage()
-			return
-		}
-		argvalue1 := containerStruct1.RowDesc
-		value1 := heavy.TRowDescriptor(argvalue1)
-		argvalue2, err1110 := (strconv.ParseInt(flag.Arg(3), 10, 64))
-		if err1110 != nil {
-			Usage()
-			return
-		}
-		value2 := heavy.TQueryId(argvalue2)
-		argvalue3, err1111 := (strconv.ParseInt(flag.Arg(4), 10, 64))
-		if err1111 != nil {
-			Usage()
-			return
-		}
-		value3 := heavy.TSubqueryId(argvalue3)
-		argvalue4 := flag.Arg(5) == "true"
-		value4 := argvalue4
-		fmt.Print(client.BroadcastSerializedRows(context.Background(), value0, value1, value2, value3, value4))
-		fmt.Print("\n")
-		break
-	case "start_render_query":
-		if flag.NArg() - 1 != 4 {
-			fmt.Fprintln(os.Stderr, "StartRenderQuery requires 4 args")
-			flag.Usage()
-		}
-		argvalue0 := flag.Arg(1)
-		value0 := heavy.TSessionId(argvalue0)
-		argvalue1, err1114 := (strconv.ParseInt(flag.Arg(2), 10, 64))
-		if err1114 != nil {
-			Usage()
-			return
-		}
-		value1 := argvalue1
-		tmp2, err1115 := (strconv.Atoi(flag.Arg(3)))
-		if err1115 != nil {
-			Usage()
-			return
-		}
-		argvalue2 := int16(tmp2)
-		value2 := argvalue2
-		argvalue3 := flag.Arg(4)
-		value3 := argvalue3
-		fmt.Print(client.StartRenderQuery(context.Background(), value0, value1, value2, value3))
-		fmt.Print("\n")
-		break
-	case "execute_next_render_step":
-		if flag.NArg() - 1 != 2 {
-			fmt.Fprintln(os.Stderr, "ExecuteNextRenderStep requires 2 args")
-			flag.Usage()
-		}
-		arg1117 := flag.Arg(1)
-		mbTrans1118 := thrift.NewTMemoryBufferLen(len(arg1117))
-		defer mbTrans1118.Close()
-		_, err1119 := mbTrans1118.WriteString(arg1117)
-		if err1119 != nil {
-			Usage()
-			return
-		}
-		factory1120 := thrift.NewTJSONProtocolFactory()
-		jsProt1121 := factory1120.GetProtocol(mbTrans1118)
-		argvalue0 := heavy.NewTPendingRenderQuery()
-		err1122 := argvalue0.Read(context.Background(), jsProt1121)
-		if err1122 != nil {
-			Usage()
-			return
-		}
-		value0 := argvalue0
-		arg1123 := flag.Arg(2)
-		mbTrans1124 := thrift.NewTMemoryBufferLen(len(arg1123))
-		defer mbTrans1124.Close()
-		_, err1125 := mbTrans1124.WriteString(arg1123)
-		if err1125 != nil {
-			Usage()
-			return
-		}
-		factory1126 := thrift.NewTJSONProtocolFactory()
-		jsProt1127 := factory1126.GetProtocol(mbTrans1124)
-		containerStruct1 := heavy.NewHeavyExecuteNextRenderStepArgs()
-		err1128 := containerStruct1.ReadField2(context.Background(), jsProt1127)
-		if err1128 != nil {
-			Usage()
-			return
-		}
-		argvalue1 := containerStruct1.MergedData
-		value1 := heavy.TRenderAggDataMap(argvalue1)
-		fmt.Print(client.ExecuteNextRenderStep(context.Background(), value0, value1))
-		fmt.Print("\n")
-		break
-	case "insert_data":
-		if flag.NArg() - 1 != 2 {
-			fmt.Fprintln(os.Stderr, "InsertData requires 2 args")
-			flag.Usage()
-		}
-		argvalue0 := flag.Arg(1)
-		value0 := heavy.TSessionId(argvalue0)
-		arg1130 := flag.Arg(2)
-		mbTrans1131 := thrift.NewTMemoryBufferLen(len(arg1130))
-		defer mbTrans1131.Close()
-		_, err1132 := mbTrans1131.WriteString(arg1130)
-		if err1132 != nil {
-			Usage()
-			return
-		}
-		factory1133 := thrift.NewTJSONProtocolFactory()
-		jsProt1134 := factory1133.GetProtocol(mbTrans1131)
-		argvalue1 := heavy.NewTInsertData()
-		err1135 := argvalue1.Read(context.Background(), jsProt1134)
-		if err1135 != nil {
-			Usage()
-			return
-		}
-		value1 := argvalue1
-		fmt.Print(client.InsertData(context.Background(), value0, value1))
-		fmt.Print("\n")
-		break
-	case "insert_chunks":
-		if flag.NArg() - 1 != 2 {
-			fmt.Fprintln(os.Stderr, "InsertChunks requires 2 args")
-			flag.Usage()
-		}
-		argvalue0 := flag.Arg(1)
-		value0 := heavy.TSessionId(argvalue0)
-		arg1137 := flag.Arg(2)
-		mbTrans1138 := thrift.NewTMemoryBufferLen(len(arg1137))
-		defer mbTrans1138.Close()
-		_, err1139 := mbTrans1138.WriteString(arg1137)
-		if err1139 != nil {
-			Usage()
-			return
-		}
-		factory1140 := thrift.NewTJSONProtocolFactory()
-		jsProt1141 := factory1140.GetProtocol(mbTrans1138)
-		argvalue1 := heavy.NewTInsertChunks()
-		err1142 := argvalue1.Read(context.Background(), jsProt1141)
-		if err1142 != nil {
-			Usage()
-			return
-		}
-		value1 := argvalue1
-		fmt.Print(client.InsertChunks(context.Background(), value0, value1))
-		fmt.Print("\n")
-		break
-	case "checkpoint":
-		if flag.NArg() - 1 != 2 {
-			fmt.Fprintln(os.Stderr, "Checkpoint requires 2 args")
-			flag.Usage()
-		}
-		argvalue0 := flag.Arg(1)
-		value0 := heavy.TSessionId(argvalue0)
-		tmp1, err1144 := (strconv.Atoi(flag.Arg(2)))
-		if err1144 != nil {
-			Usage()
-			return
-		}
-		argvalue1 := int32(tmp1)
-		value1 := argvalue1
-		fmt.Print(client.Checkpoint(context.Background(), value0, value1))
 		fmt.Print("\n")
 		break
 	case "get_roles":
@@ -2364,19 +1960,19 @@ func main() {
 		}
 		argvalue3 := heavy.TDBObjectType(tmp3)
 		value3 := argvalue3
-		arg1160 := flag.Arg(5)
-		mbTrans1161 := thrift.NewTMemoryBufferLen(len(arg1160))
-		defer mbTrans1161.Close()
-		_, err1162 := mbTrans1161.WriteString(arg1160)
-		if err1162 != nil {
+		arg941 := flag.Arg(5)
+		mbTrans942 := thrift.NewTMemoryBufferLen(len(arg941))
+		defer mbTrans942.Close()
+		_, err943 := mbTrans942.WriteString(arg941)
+		if err943 != nil {
 			Usage()
 			return
 		}
-		factory1163 := thrift.NewTJSONProtocolFactory()
-		jsProt1164 := factory1163.GetProtocol(mbTrans1161)
+		factory944 := thrift.NewTJSONProtocolFactory()
+		jsProt945 := factory944.GetProtocol(mbTrans942)
 		argvalue4 := heavy.NewTDBObjectPermissions()
-		err1165 := argvalue4.Read(context.Background(), jsProt1164)
-		if err1165 != nil {
+		err946 := argvalue4.Read(context.Background(), jsProt945)
+		if err946 != nil {
 			Usage()
 			return
 		}
@@ -2401,55 +1997,55 @@ func main() {
 		}
 		argvalue0 := flag.Arg(1)
 		value0 := heavy.TSessionId(argvalue0)
-		arg1168 := flag.Arg(2)
-		mbTrans1169 := thrift.NewTMemoryBufferLen(len(arg1168))
-		defer mbTrans1169.Close()
-		_, err1170 := mbTrans1169.WriteString(arg1168)
-		if err1170 != nil {
+		arg949 := flag.Arg(2)
+		mbTrans950 := thrift.NewTMemoryBufferLen(len(arg949))
+		defer mbTrans950.Close()
+		_, err951 := mbTrans950.WriteString(arg949)
+		if err951 != nil {
 			Usage()
 			return
 		}
-		factory1171 := thrift.NewTJSONProtocolFactory()
-		jsProt1172 := factory1171.GetProtocol(mbTrans1169)
+		factory952 := thrift.NewTJSONProtocolFactory()
+		jsProt953 := factory952.GetProtocol(mbTrans950)
 		containerStruct1 := heavy.NewHeavyRegisterRuntimeExtensionFunctionsArgs()
-		err1173 := containerStruct1.ReadField2(context.Background(), jsProt1172)
-		if err1173 != nil {
+		err954 := containerStruct1.ReadField2(context.Background(), jsProt953)
+		if err954 != nil {
 			Usage()
 			return
 		}
 		argvalue1 := containerStruct1.Udfs
 		value1 := argvalue1
-		arg1174 := flag.Arg(3)
-		mbTrans1175 := thrift.NewTMemoryBufferLen(len(arg1174))
-		defer mbTrans1175.Close()
-		_, err1176 := mbTrans1175.WriteString(arg1174)
-		if err1176 != nil {
+		arg955 := flag.Arg(3)
+		mbTrans956 := thrift.NewTMemoryBufferLen(len(arg955))
+		defer mbTrans956.Close()
+		_, err957 := mbTrans956.WriteString(arg955)
+		if err957 != nil {
 			Usage()
 			return
 		}
-		factory1177 := thrift.NewTJSONProtocolFactory()
-		jsProt1178 := factory1177.GetProtocol(mbTrans1175)
+		factory958 := thrift.NewTJSONProtocolFactory()
+		jsProt959 := factory958.GetProtocol(mbTrans956)
 		containerStruct2 := heavy.NewHeavyRegisterRuntimeExtensionFunctionsArgs()
-		err1179 := containerStruct2.ReadField3(context.Background(), jsProt1178)
-		if err1179 != nil {
+		err960 := containerStruct2.ReadField3(context.Background(), jsProt959)
+		if err960 != nil {
 			Usage()
 			return
 		}
 		argvalue2 := containerStruct2.Udtfs
 		value2 := argvalue2
-		arg1180 := flag.Arg(4)
-		mbTrans1181 := thrift.NewTMemoryBufferLen(len(arg1180))
-		defer mbTrans1181.Close()
-		_, err1182 := mbTrans1181.WriteString(arg1180)
-		if err1182 != nil {
+		arg961 := flag.Arg(4)
+		mbTrans962 := thrift.NewTMemoryBufferLen(len(arg961))
+		defer mbTrans962.Close()
+		_, err963 := mbTrans962.WriteString(arg961)
+		if err963 != nil {
 			Usage()
 			return
 		}
-		factory1183 := thrift.NewTJSONProtocolFactory()
-		jsProt1184 := factory1183.GetProtocol(mbTrans1181)
+		factory964 := thrift.NewTJSONProtocolFactory()
+		jsProt965 := factory964.GetProtocol(mbTrans962)
 		containerStruct3 := heavy.NewHeavyRegisterRuntimeExtensionFunctionsArgs()
-		err1185 := containerStruct3.ReadField4(context.Background(), jsProt1184)
-		if err1185 != nil {
+		err966 := containerStruct3.ReadField4(context.Background(), jsProt965)
+		if err966 != nil {
 			Usage()
 			return
 		}
@@ -2485,19 +2081,19 @@ func main() {
 		}
 		argvalue0 := flag.Arg(1)
 		value0 := heavy.TSessionId(argvalue0)
-		arg1189 := flag.Arg(2)
-		mbTrans1190 := thrift.NewTMemoryBufferLen(len(arg1189))
-		defer mbTrans1190.Close()
-		_, err1191 := mbTrans1190.WriteString(arg1189)
-		if err1191 != nil {
+		arg970 := flag.Arg(2)
+		mbTrans971 := thrift.NewTMemoryBufferLen(len(arg970))
+		defer mbTrans971.Close()
+		_, err972 := mbTrans971.WriteString(arg970)
+		if err972 != nil {
 			Usage()
 			return
 		}
-		factory1192 := thrift.NewTJSONProtocolFactory()
-		jsProt1193 := factory1192.GetProtocol(mbTrans1190)
+		factory973 := thrift.NewTJSONProtocolFactory()
+		jsProt974 := factory973.GetProtocol(mbTrans971)
 		containerStruct1 := heavy.NewHeavyGetTableFunctionDetailsArgs()
-		err1194 := containerStruct1.ReadField2(context.Background(), jsProt1193)
-		if err1194 != nil {
+		err975 := containerStruct1.ReadField2(context.Background(), jsProt974)
+		if err975 != nil {
 			Usage()
 			return
 		}
@@ -2533,19 +2129,19 @@ func main() {
 		}
 		argvalue0 := flag.Arg(1)
 		value0 := heavy.TSessionId(argvalue0)
-		arg1198 := flag.Arg(2)
-		mbTrans1199 := thrift.NewTMemoryBufferLen(len(arg1198))
-		defer mbTrans1199.Close()
-		_, err1200 := mbTrans1199.WriteString(arg1198)
-		if err1200 != nil {
+		arg979 := flag.Arg(2)
+		mbTrans980 := thrift.NewTMemoryBufferLen(len(arg979))
+		defer mbTrans980.Close()
+		_, err981 := mbTrans980.WriteString(arg979)
+		if err981 != nil {
 			Usage()
 			return
 		}
-		factory1201 := thrift.NewTJSONProtocolFactory()
-		jsProt1202 := factory1201.GetProtocol(mbTrans1199)
+		factory982 := thrift.NewTJSONProtocolFactory()
+		jsProt983 := factory982.GetProtocol(mbTrans980)
 		containerStruct1 := heavy.NewHeavyGetFunctionDetailsArgs()
-		err1203 := containerStruct1.ReadField2(context.Background(), jsProt1202)
-		if err1203 != nil {
+		err984 := containerStruct1.ReadField2(context.Background(), jsProt983)
+		if err984 != nil {
 			Usage()
 			return
 		}
@@ -2561,19 +2157,19 @@ func main() {
 		}
 		argvalue0 := flag.Arg(1)
 		value0 := heavy.TSessionId(argvalue0)
-		arg1205 := flag.Arg(2)
-		mbTrans1206 := thrift.NewTMemoryBufferLen(len(arg1205))
-		defer mbTrans1206.Close()
-		_, err1207 := mbTrans1206.WriteString(arg1205)
-		if err1207 != nil {
+		arg986 := flag.Arg(2)
+		mbTrans987 := thrift.NewTMemoryBufferLen(len(arg986))
+		defer mbTrans987.Close()
+		_, err988 := mbTrans987.WriteString(arg986)
+		if err988 != nil {
 			Usage()
 			return
 		}
-		factory1208 := thrift.NewTJSONProtocolFactory()
-		jsProt1209 := factory1208.GetProtocol(mbTrans1206)
+		factory989 := thrift.NewTJSONProtocolFactory()
+		jsProt990 := factory989.GetProtocol(mbTrans987)
 		containerStruct1 := heavy.NewHeavyPutImmerseUsersMetadataArgs()
-		err1210 := containerStruct1.ReadField2(context.Background(), jsProt1209)
-		if err1210 != nil {
+		err991 := containerStruct1.ReadField2(context.Background(), jsProt990)
+		if err991 != nil {
 			Usage()
 			return
 		}
