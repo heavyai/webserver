@@ -9,17 +9,11 @@ source ./scripts/util.sh
 print_headline "Building for all environments"
 
 # The build directory names were chosen to match the cmake environment variable names when run on
-# the corresponding platform, e.g. on macOS with a x86-64 processor, that's "Darwin-i386"
+# the corresponding platform
 echo "* Building Linux amd64"
 GOOS=linux GOARCH=amd64 ./scripts/build.sh "build/Linux-x86_64"
-echo -e "\n* Building Linux ppc64el"
-GOOS=linux GOARCH=ppc64le ./scripts/build.sh "build/Linux-ppc64le"
 echo -e "\n* Building Linux arm64"
 GOOS=linux GOARCH=arm64 ./scripts/build.sh "build/Linux-aarch64"
-echo -e "\n* Building macOS x86_64"
-GOOS=darwin GOARCH=amd64 ./scripts/build.sh "build/Darwin-x86_64"
-echo -e "\n* Building macOS aarch64"
-GOOS=darwin GOARCH=amd64 ./scripts/build.sh "build/Darwin-aarch64"
 echo
 
 print_headline "Compressing binaries"
