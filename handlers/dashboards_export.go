@@ -4,19 +4,16 @@
 package handlers
 
 import (
-	"bytes"
-	"context"
 	"encoding/base64"
 	"fmt"
-	"io/fs"
 	"net/http"
 	"strings"
 	"time"
 
 	"github.com/labstack/echo/v4"
-	"github.com/mholt/archives"
 
 	"github.com/heavyai/webserver/internal/config"
+	"github.com/heavyai/webserver/internal/dashboardarchive"
 	"github.com/heavyai/webserver/internal/util"
 	"github.com/heavyai/webserver/models"
 )
@@ -38,7 +35,7 @@ func DashboardsExport(ctx echo.Context) (err error) {
 		return err
 	}
 
-	var files []archives.FileInfo
+	var files []dashboardarchive.File
 
 	for _, id := range dashboards.IDs {
 		dashboard, err := util.GetDashboard(sessionInfo.SessionID, id)
@@ -62,18 +59,9 @@ func DashboardsExport(ctx echo.Context) (err error) {
 		}
 		exportFileName := strings.ReplaceAll(dashboard.DashboardName, "/", "_") + "_" + dbVersion + "_" + time.Now().Format(time.RFC3339) + ".json"
 
-		contentsCopy := make([]byte, len(exportContents))
-		copy(contentsCopy, exportContents)
-
-		file := archives.FileInfo{
-			FileInfo:      &models.VirtualFileInfo{FileName: exportFileName, Data: contentsCopy},
-			NameInArchive: exportFileName,
-			Open: func() (fs.File, error) {
-				return &models.VirtualFile{
-					Reader: bytes.NewReader(contentsCopy),
-					VFI:    models.VirtualFileInfo{FileName: exportFileName, Data: contentsCopy},
-				}, nil
-			},
+		file := dashboardarchive.File{
+			Name:     exportFileName,
+			Contents: exportContents,
 		}
 		files = append(files, file)
 	}
@@ -81,10 +69,7 @@ func DashboardsExport(ctx echo.Context) (err error) {
 	ctx.Response().Header().Set(echo.HeaderContentType, "application/zip")
 	ctx.Response().WriteHeader(http.StatusOK)
 
-	format := archives.Zip{
-		SelectiveCompression: true,
-	}
-	err = format.Archive(context.Background(), ctx.Response(), files)
+	err = dashboardarchive.Write(ctx.Response(), files)
 	if err != nil {
 		config.Log.Error("Dashboard export failure", err)
 		return err
