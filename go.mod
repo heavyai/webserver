@@ -1,6 +1,6 @@
 module github.com/heavyai/webserver
 
-go 1.26.4
+go 1.27rc2
 
 require (
 	github.com/Jeffail/gabs v1.4.0
