@@ -6,7 +6,7 @@ require (
 	github.com/Jeffail/gabs v1.4.0
 	github.com/Jeffail/gabs/v2 v2.1.0
 	github.com/andrewseidl/viper v0.0.0-20191228040610-757ecc9b7b3e
-	github.com/apache/thrift v0.23.0
+	github.com/apache/thrift v0.24.0
 	github.com/go-http-utils/headers v0.0.0-20181008091004-fed159eddc2a
 	github.com/google/uuid v1.4.0
 	github.com/gorilla/sessions v1.2.0

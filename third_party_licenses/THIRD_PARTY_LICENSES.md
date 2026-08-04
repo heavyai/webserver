@@ -10,7 +10,7 @@ Generated from the installed module cache. Total packages: **49**.
 |---|---|---|---|
 | github.com/andrewseidl/viper | v0.0.0-20191228040610-757ecc9b7b3e | MIT | [https://spdx.org/licenses/MIT.html](https://spdx.org/licenses/MIT.html) |
 | github.com/andybalholm/brotli | v1.2.0 | MIT | [https://spdx.org/licenses/MIT.html](https://spdx.org/licenses/MIT.html) |
-| github.com/apache/thrift | v0.23.0 | Apache-2.0 | [https://spdx.org/licenses/Apache-2.0.html](https://spdx.org/licenses/Apache-2.0.html) |
+| github.com/apache/thrift | v0.24.0 | Apache-2.0 | [https://spdx.org/licenses/Apache-2.0.html](https://spdx.org/licenses/Apache-2.0.html) |
 | github.com/bodgit/plumbing | v1.3.0 | BSD-3-Clause | [https://spdx.org/licenses/BSD-3-Clause.html](https://spdx.org/licenses/BSD-3-Clause.html) |
 | github.com/bodgit/sevenzip | v1.6.1 | BSD-3-Clause | [https://spdx.org/licenses/BSD-3-Clause.html](https://spdx.org/licenses/BSD-3-Clause.html) |
 | github.com/bodgit/windows | v1.0.1 | BSD-3-Clause | [https://spdx.org/licenses/BSD-3-Clause.html](https://spdx.org/licenses/BSD-3-Clause.html) |
