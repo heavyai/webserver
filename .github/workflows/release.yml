@@ -1,5 +1,5 @@
 name: Release
-run-name: ${{ inputs.description != '' && format('webserver — {0}', inputs.description) || 'webserver Release' }}
+run-name: 'webserver Release'
 
 on:
   workflow_dispatch:
@@ -8,20 +8,10 @@ on:
         description: 'Branch or SHA to build'
         type: string
         default: 'master'
-      mark_as_latest:
-        description: 'Promote this release to the repo latest (enables RC builder auto-pull)'
-        type: boolean
-        default: false
-      description:
-        description: 'Build description label'
-        type: string
-        default: ''
 
 jobs:
   build:
     runs-on: linux-amd64-cpu16
-    permissions:
-      contents: write
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -44,21 +34,3 @@ jobs:
 
       - name: Build all platforms
         run: ./scripts/build-all.sh
-
-      - name: Create GitHub Release
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          SHA="${{ github.sha }}"
-          TAG="webserver-${SHA::8}"
-          TITLE="webserver ${TAG}"
-          if [ -n "${{ inputs.description }}" ]; then
-            TITLE="$TITLE — ${{ inputs.description }}"
-          fi
-          gh release create "$TAG" build/*.tar.gz \
-            --repo "${{ github.repository }}" \
-            --title "$TITLE" \
-            --notes "Built from \`${{ inputs.release_candidate || github.ref_name }}\` (${SHA}) — run [${{ github.run_id }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})"
-          if [ "${{ inputs.mark_as_latest }}" = "true" ]; then
-            gh release edit "$TAG" --repo "${{ github.repository }}" --latest
-          fi
