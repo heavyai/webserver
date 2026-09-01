@@ -1,5 +1,12 @@
 // SPDX-FileCopyrightText: Copyright (c) 2026, NVIDIA CORPORATION & AFFILIATES. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
+//
+// This file uses github.com/mholt/archives, which transitively includes
+// github.com/hashicorp/golang-lru/v2 (Copyright (c) 2014 HashiCorp, Inc.).
+// golang-lru is licensed under the Mozilla Public License, v. 2.0.
+// If a copy of the MPL was not distributed with this file, you can obtain
+// one at https://mozilla.org/MPL/2.0/. Source is available at
+// https://github.com/hashicorp/golang-lru.
 
 package handlers
 
