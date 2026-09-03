@@ -38,7 +38,7 @@ See `/tools` for various development and testing tools with separate dedicated R
 
 ## Third-Party Licenses
 
-A full list of third-party Go modules and their licenses is maintained in [`license/THIRD_PARTY_LICENSES.md`](license/THIRD_PARTY_LICENSES.md). To regenerate it after dependency changes, run:
+A full list of third-party Go modules and their licenses is maintained in [`third_party_licenses/THIRD_PARTY_LICENSES.md`](third_party_licenses/THIRD_PARTY_LICENSES.md). To regenerate it after dependency changes, run:
 
 ```sh
 ./scripts/generate-third-party-licenses.sh
