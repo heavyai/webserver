@@ -2,7 +2,7 @@
 # SPDX-FileCopyrightText: Copyright (c) 2026, NVIDIA CORPORATION & AFFILIATES. All rights reserved.
 # SPDX-License-Identifier: Apache-2.0
 #
-# Generates license/THIRD_PARTY_LICENSES.md by scanning the Go module cache
+# Generates third_party_licenses/THIRD_PARTY_LICENSES.md by scanning the Go module cache
 # for all dependencies listed in go.mod.
 #
 # Usage: ./scripts/generate-third-party-licenses.sh
