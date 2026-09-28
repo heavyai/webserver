@@ -47,7 +47,7 @@ mapbox-token = "pk.<your Mapbox access token>"
 google-api-key = "<your Google Maps API key>"
 ```
 
-These are injected into the served page at request time as `window.MAP_CONFIG` and are picked up automatically on restart — no rebuild or redeploy of the frontend bundle required. As with any browser-side map SDK key, restrict it to your domain in the Mapbox/Google dashboard; this mechanism avoids baking a shared key into the distributed build, but the key is still visible to anyone using the running app.
+These are injected into Immerse at request time — no rebuild or redeploy of the frontend bundle required. As with any API key, restrict it to your domain in the Mapbox/Google dashboard; the key is still visible to anyone using the running app.
 
 ## Tools
 See `/tools` for various development and testing tools with separate dedicated READMEs.
