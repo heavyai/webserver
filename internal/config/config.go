@@ -123,6 +123,8 @@ var (
 		SubstituteSessionID            string
 		IndexHTMLbytes                 []byte
 		GoogleTagID                    string
+		MapboxToken                    string
+		GoogleAPIKey                   string
 		EnableBinaryThrift             bool
 		EnableUploadExtensionCheck     bool
 		AdditionalFileUploadExtensions []string
@@ -359,6 +361,8 @@ func init() {
 	pflag.Bool("enable-runtime-query-interrupt", false, "Enable runtime query interrupt")
 	pflag.Bool("enable-non-kernel-time-query-interrupt", true, "Enable non-kernel-time query interrupt")
 	pflag.String("google-tag-id", "", "Google Analytics Tag ID")
+	pflag.String("mapbox-token", "", "Mapbox access token for frontend map rendering")
+	pflag.String("google-api-key", "", "Google Maps API key for frontend map rendering")
 	pflag.Bool("enable-binary-thrift", true, "Use the binary thrift protocol")
 	pflag.Bool("enable-upload-extension-check", false, "Disable file extension check for file uploads")
 	pflag.String("additional-file-upload-extensions", "", "Denote additional file extensions allowable for uploads")
@@ -470,6 +474,8 @@ func init() {
 	viper.BindPFlag("enable-runtime-query-interrupt", pflag.CommandLine.Lookup("enable-runtime-query-interrupt"))
 	viper.BindPFlag("enable-non-kernel-time-query-interrupt", pflag.CommandLine.Lookup("enable-non-kernel-time-query-interrupt"))
 	viper.BindPFlag("web.google-tag-id", pflag.CommandLine.Lookup("google-tag-id"))
+	viper.BindPFlag("web.mapbox-token", pflag.CommandLine.Lookup("mapbox-token"))
+	viper.BindPFlag("web.google-api-key", pflag.CommandLine.Lookup("google-api-key"))
 	viper.BindPFlag("web.enable-binary-thrift", pflag.CommandLine.Lookup("enable-binary-thrift"))
 	viper.BindPFlag("web.enable-upload-extension-check", pflag.CommandLine.Lookup("enable-upload-extension-check"))
 	viper.BindPFlag("web.additional-file-upload-extensions", pflag.CommandLine.Lookup("additional-file-upload-extensions"))
@@ -515,6 +521,8 @@ func init() {
 	)
 	Other.GoogleTagID = viper.GetString("web.google-tag-id")
 	Enable.GoogleMetrics = len(Other.GoogleTagID) != 0
+	Other.MapboxToken = viper.GetString("web.mapbox-token")
+	Other.GoogleAPIKey = viper.GetString("web.google-api-key")
 
 	iqURLStr := viper.GetString("web.iq-url")
 	Paths.IQServiceURL, err = url.Parse(iqURLStr)

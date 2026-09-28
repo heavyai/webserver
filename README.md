@@ -33,6 +33,22 @@ compiled Immerse>` options to the server to see it function properly. If you
 get a hard crash trying to hit the server, ensure `--frontend` is set properly
 to point to Immerse's `dist` directory, and you have compiled Immerse.*
 
+## Configuration
+
+Most settings can be provided via CLI flag, environment variable (`HEAVY_<SECTION>_<FLAG-NAME>`, e.g. `HEAVY_WEB_MAPBOX-TOKEN` — note hyphens in flag names are preserved, not converted to underscores), or a TOML config file passed with `--config`/`-c` (see `tools/docker/local/heavy.conf` for an example). Web-server-specific settings live under a `[web]` table in that file.
+
+### Map provider keys
+
+To enable map charts in Immerse without rebuilding the frontend, set your own Mapbox and/or Google Maps API keys in `heavy.conf`:
+
+```toml
+[web]
+mapbox-token = "pk.<your Mapbox access token>"
+google-api-key = "<your Google Maps API key>"
+```
+
+These are injected into Immerse at request time — no rebuild or redeploy of the frontend bundle required. As with any API key, restrict it to your domain in the Mapbox/Google dashboard; the key is still visible to anyone using the running app.
+
 ## Tools
 See `/tools` for various development and testing tools with separate dedicated READMEs.
 
