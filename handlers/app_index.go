@@ -20,6 +20,7 @@ type templateVars struct {
 	AppConfigDeclaration     template.JS
 	DBConfigDeclaration      template.JS
 	MetricsConfigDeclaration template.JS
+	MapConfigDeclaration     template.JS
 }
 
 const scriptTemplateStr = `
@@ -27,6 +28,7 @@ const scriptTemplateStr = `
 		{{.AppConfigDeclaration}}
 		{{.DBConfigDeclaration}}
 		{{.MetricsConfigDeclaration}}
+		{{.MapConfigDeclaration}}
 	</script>
 `
 
@@ -41,10 +43,16 @@ func getTemplateVars(serverConfig []byte) templateVars {
 		mc = []byte("{}")
 	}
 
+	mapc, err := util.GetMapConfigJSON()
+	if err != nil {
+		mapc = []byte("{}")
+	}
+
 	return templateVars{
 		AppConfigDeclaration:     template.JS("window." + constants.AppConfigJSConstName + " = " + string(serverConfig)),
 		DBConfigDeclaration:      template.JS("window." + constants.DBConfigJSConstName + " = " + string(dbc)),
 		MetricsConfigDeclaration: template.JS("window." + constants.MetricsConfigJSConstName + " = " + string(mc)),
+		MapConfigDeclaration:     template.JS("window." + constants.MapConfigJSConstName + " = " + string(mapc)),
 	}
 }
 

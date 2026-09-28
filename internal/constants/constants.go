@@ -36,6 +36,8 @@ const (
 	InstanceConfigJSONFileName = "immerse_instance_config.json"
 	// MetricsConfigJSConstName - Name of variable that will push metrics configuration into index.html for JS in Immerse app
 	MetricsConfigJSConstName = "METRICS_CONFIG"
+	// MapConfigJSConstName - Name of variable that will push map provider configuration into index.html for JS in Immerse app
+	MapConfigJSConstName = "MAP_CONFIG"
 	// RelativeImportPath - Relative Import path
 	RelativeImportPath = "import"
 	// RelativeExportPath - Relative Export path
