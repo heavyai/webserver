@@ -16,6 +16,7 @@ omnisci_web_server
 # Test tooling output
 *.test
 *.out
+# internal/config init creates package-local data/log directories before tests run
 /cmd/immerse/data
 /handlers/data
 /middlewares/data

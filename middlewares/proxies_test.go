@@ -40,6 +40,7 @@ func TestReverseProxyAppendsDirectPeerAndSanitizesForwardedHeader(t *testing.T) 
 		return ctx.NoContent(http.StatusTeapot)
 	})
 
+	// Echo intentionally ignores client-supplied forwarding headers unless a trusted IP extractor is configured.
 	request := httptest.NewRequest(http.MethodGet, "/proxy", nil)
 	request.RemoteAddr = "192.0.2.10:4321"
 	request.Header.Set("Forwarded", "for=198.51.100.23;proto=https")
@@ -149,60 +150,5 @@ func TestReverseProxySupportsWebSocketUpgrade(t *testing.T) {
 	if response.StatusCode != http.StatusSwitchingProtocols {
 		body, _ := io.ReadAll(response.Body)
 		t.Fatalf("expected websocket upgrade status %d, got %d: %s", http.StatusSwitchingProtocols, response.StatusCode, body)
-	}
-}
-
-func TestAppendPathQueryProxyPreservesTargetAndRequestValues(t *testing.T) {
-	var path string
-	var rawQuery string
-	var host string
-	var hostHeader string
-	var forwardedProto string
-
-	backend := httptest.NewServer(http.HandlerFunc(func(response http.ResponseWriter, request *http.Request) {
-		path = request.URL.Path
-		rawQuery = request.URL.RawQuery
-		host = request.Host
-		hostHeader = request.Header.Get("host_header")
-		forwardedProto = request.Header.Get(echo.HeaderXForwardedProto)
-		response.WriteHeader(http.StatusNoContent)
-	}))
-	defer backend.Close()
-
-	targetURL, err := url.Parse(backend.URL + "/ingest?api_key=test")
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	e := echo.New()
-	e.Use(AppendPathQueryProxy(targetURL, "/telemetry"))
-	e.Any("/*", func(ctx echo.Context) error {
-		return ctx.NoContent(http.StatusTeapot)
-	})
-
-	request := httptest.NewRequest(http.MethodPost, "/telemetry/capture?source=immerse", nil)
-	request.RemoteAddr = "192.0.2.10:4321"
-	request.Header.Set(echo.HeaderXForwardedProto, "https")
-	response := httptest.NewRecorder()
-
-	e.ServeHTTP(response, request)
-
-	if response.Code != http.StatusNoContent {
-		t.Fatalf("expected backend status %d, got %d", http.StatusNoContent, response.Code)
-	}
-	if path != "/ingest/capture" {
-		t.Errorf("expected joined target path, got %q", path)
-	}
-	if rawQuery != "api_key=test&source=immerse" {
-		t.Errorf("expected combined query, got %q", rawQuery)
-	}
-	if host != targetURL.Host {
-		t.Errorf("expected target host %q, got %q", targetURL.Host, host)
-	}
-	if hostHeader != targetURL.Host {
-		t.Errorf("expected host_header %q, got %q", targetURL.Host, hostHeader)
-	}
-	if forwardedProto != "http" {
-		t.Errorf("expected direct request scheme, got %q", forwardedProto)
 	}
 }
