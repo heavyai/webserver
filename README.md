@@ -49,6 +49,17 @@ google-api-key = "<your Google Maps API key>"
 
 These are injected into Immerse at request time — no rebuild or redeploy of the frontend bundle required. As with any API key, restrict it to your domain in the Mapbox/Google dashboard; the key is still visible to anyone using the running app.
 
+### Trusted proxies
+
+When webserver runs behind a load balancer or reverse proxy, list the proxy networks that may supply client IP and request scheme forwarding headers:
+
+```toml
+[web]
+trusted-proxy-cidrs = ["10.0.0.0/8", "2001:db8::/64"]
+```
+
+The same setting is available through the `--trusted-proxy-cidrs` flag and the normal environment-variable mapping. If it is not configured, `X-Forwarded-For` is ignored when determining the client IP. If it is configured, only the listed CIDR ranges are trusted; private, loopback, and link-local networks are not trusted implicitly. Configure the narrowest possible ranges, and ensure each trusted proxy sanitizes forwarding headers received from clients.
+
 ## Tools
 See `/tools` for various development and testing tools with separate dedicated READMEs.
 

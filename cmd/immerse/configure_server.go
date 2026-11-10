@@ -7,6 +7,8 @@ import (
 	"context"
 	"crypto/tls"
 	"crypto/x509"
+	"fmt"
+	"net"
 	"net/http"
 	"os"
 	"os/signal"
@@ -19,6 +21,33 @@ import (
 	"github.com/heavyai/webserver/internal/config"
 	"github.com/heavyai/webserver/middlewares"
 )
+
+// configureTrustedProxies enables forwarding-header extraction only for
+// connections received directly from one of the configured proxy networks.
+func configureTrustedProxies(e *echo.Echo, cidrs []string) error {
+	if len(cidrs) == 0 {
+		return nil
+	}
+
+	trustOptions := []echo.TrustOption{
+		echo.TrustLoopback(false),
+		echo.TrustLinkLocal(false),
+		echo.TrustPrivateNet(false),
+	}
+
+	for _, cidr := range cidrs {
+		_, network, err := net.ParseCIDR(cidr)
+		if err != nil {
+			return fmt.Errorf("invalid trusted proxy CIDR %q: %w", cidr, err)
+		}
+		trustOptions = append(trustOptions, echo.TrustIPRange(network))
+	}
+
+	e.IPExtractor = echo.ExtractIPFromXFFHeader(trustOptions...)
+	e.SchemeExtractor = echo.ExtractSchemeFromHeaders(trustOptions...)
+
+	return nil
+}
 
 func configureInsecureServer(echoInstance *echo.Echo) *http.Server {
 	echoInstance.Server.ReadTimeout = config.HTTP.ConnTimeout

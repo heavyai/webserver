@@ -17,6 +17,10 @@ import (
 
 func main() {
 	e := echo.New()
+	if err := configureTrustedProxies(e, config.Other.TrustedProxyCIDRs); err != nil {
+		config.Log.Fatal("Failed to configure trusted proxies: ", err)
+	}
+
 	e.HideBanner = true
 	e.HTTPErrorHandler = handlers.Immerse404
 
