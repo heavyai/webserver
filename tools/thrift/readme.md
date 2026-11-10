@@ -14,7 +14,10 @@ rm -rf gen-go
 thrift -r \
   --gen go:package_prefix=github.com/heavyai/webserver/internal/db_thrift_client/ \
   heavy.thrift
-mv gen-go/* ${WEBSERVER_DIR}/internal/db_thrift_client
+for pkg in gen-go/*/; do
+  rsync -a --delete "$pkg" \
+    "${WEBSERVER_DIR}/internal/db_thrift_client/$(basename "$pkg")/"
+done
 ```
 
 The compiler version must match the Thrift library version in `go.mod`.
