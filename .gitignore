@@ -16,7 +16,10 @@ omnisci_web_server
 # Test tooling output
 *.test
 *.out
+/cmd/immerse/data
 /handlers/data
+/middlewares/data
+/models/data
 
 # Local tooling, OS
 .vscode

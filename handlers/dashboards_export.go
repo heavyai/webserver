@@ -15,6 +15,7 @@ import (
 	"context"
 	"encoding/base64"
 	"fmt"
+	"io"
 	"io/fs"
 	"net/http"
 	"strings"
@@ -88,14 +89,18 @@ func DashboardsExport(ctx echo.Context) (err error) {
 	ctx.Response().Header().Set(echo.HeaderContentType, "application/zip")
 	ctx.Response().WriteHeader(http.StatusOK)
 
-	format := archives.Zip{
-		SelectiveCompression: true,
-	}
-	err = format.Archive(context.Background(), ctx.Response(), files)
+	err = writeDashboardArchive(ctx.Response(), files)
 	if err != nil {
 		config.Log.Error("Dashboard export failure", err)
 		return err
 	}
 
 	return nil
+}
+
+func writeDashboardArchive(writer io.Writer, files []archives.FileInfo) error {
+	format := archives.Zip{
+		SelectiveCompression: true,
+	}
+	return format.Archive(context.Background(), writer, files)
 }

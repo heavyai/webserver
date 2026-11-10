@@ -50,8 +50,7 @@ func main() {
 		e.GET("/", handlers.AppIndex, middlewares.AppIndexSessionExchange)
 	}
 	e.GET("/index.html", handlers.AppIndex)
-	e.Static("/*", config.Paths.Frontend)
-	e.Static("/docs", config.Paths.DocsDir)
+	configureStaticRoutes(e, config.Paths.Frontend, config.Paths.DocsDir)
 	e.GET("/servers.json", handlers.ServersJSON)
 	e.GET("/health", handlers.Health)
 	e.GET("/version.txt", handlers.Version)
@@ -263,4 +262,9 @@ func main() {
 	}()
 
 	configureGracefulShutdown(e, 5*time.Second)
+}
+
+func configureStaticRoutes(e *echo.Echo, frontend string, docs string) {
+	e.Static("/*", frontend)
+	e.Static("/docs", docs)
 }
