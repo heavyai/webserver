@@ -119,6 +119,7 @@ var (
 		SAMLurl                        *url.URL
 		ReturnURLFlag                  bool
 		StripXHeaders                  []string
+		TrustedProxyCIDRs              []string
 		CookieHeavyDBAuth              string
 		SubstituteSessionID            string
 		IndexHTMLbytes                 []byte
@@ -350,6 +351,7 @@ func init() {
 	pflag.Bool("custom-integration-auth", false, "Allow alternative authentication modes for a custom integration")
 	pflag.Bool("development", false, "Enable development mode")
 	pflag.StringSlice("reverse-proxy", nil, "Additional endpoints to act as reverse proxies, format '/endpoint/:http://target.example.com'")
+	pflag.StringSlice("trusted-proxy-cidrs", nil, "Trusted proxy IP ranges in CIDR notation. Enables client IP and scheme extraction from forwarding headers received directly from these ranges")
 	pflag.Bool("enable-legacy-auth", true, "Enable legacy client authentication")
 	pflag.Bool("enable-browser-logs", true, "Enable browser logs")
 	pflag.Bool("compress", true, "Enable gzip compression")
@@ -461,6 +463,7 @@ func init() {
 	viper.BindPFlag("web.allow-any-origin", pflag.CommandLine.Lookup("allow-any-origin"))
 	viper.BindPFlag("web.development", pflag.CommandLine.Lookup("development"))
 	viper.BindPFlag("web.reverse-proxy", pflag.CommandLine.Lookup("reverse-proxy"))
+	viper.BindPFlag("web.trusted-proxy-cidrs", pflag.CommandLine.Lookup("trusted-proxy-cidrs"))
 	viper.BindPFlag("web.compress", pflag.CommandLine.Lookup("compress"))
 	viper.BindPFlag("web.enable-browser-logs", pflag.CommandLine.Lookup("enable-browser-logs"))
 	viper.BindPFlag("web.enable-legacy-auth", pflag.CommandLine.Lookup("enable-legacy-auth"))
@@ -557,6 +560,7 @@ func init() {
 	}
 
 	Other.StripXHeaders = viper.GetStringSlice("web.strip-x-headers")
+	Other.TrustedProxyCIDRs = viper.GetStringSlice("web.trusted-proxy-cidrs")
 	Other.CookieHeavyDBAuth = viper.GetString("web.auth-cookie-name")
 	Other.SubstituteSessionID = viper.GetString("web.substitute-session-id")
 	Other.EncryptedCredentialsKey, err = getEncryptedCredentialsKey(
